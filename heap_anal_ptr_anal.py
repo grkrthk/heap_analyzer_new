@@ -144,8 +144,10 @@ print value
 
 #print out all the pointers
 count_of_ptrs = 0
+count_pages = 0
 for page in page_list:
    #print(page, len([item for item in value if item]))     
+   count_pages = count_pages + 1   
    if page in pagetables.keys():
           value = pagetables[page]
           print(page, len(value)*4)                  
@@ -203,6 +205,7 @@ for key, value in pagetables.iteritems() :
 		                 line = pagetables[make_key]    # get the line
                 except KeyError:
                        mis_count = mis_count + 1
+                       print make_key
                        break
 		ptr_list = re.sub("[^\w]", " ",  line).split()  #split the line
 	
@@ -214,6 +217,7 @@ for key, value in pagetables.iteritems() :
 	
 		if (ref not in ptr1addr and ref not in ptr2addr):
 		              #print "we have hit a dead end",pagetables[make_key]
+                              print >> fptrc,"ptr =",orig_ptr,"not a cycle","count :",circle_count
 	                      break
 		
 		# consider the appropriate pointer to move foraward with
@@ -237,12 +241,13 @@ for key, value in pagetables.iteritems() :
 		#print "input_ptr is", input_ptr
 		#time.sleep(2)
 	        if (input_ptr in traverse_array):
-	                    print >> fptrc,"ptr =",orig_ptr,"count :",circle_count
+	                    print >> fptrc,"ptr =",orig_ptr,"count :",circle_count+1
 	                    break
                 circle_count = circle_count + 1
 	  
          	#collect all the pointer stats
-
+       
 print "total pointers is",count_of_ptrs
 print "mis_count is",mis_count
+print "count_pages : ",count_pages
 		            

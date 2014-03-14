@@ -20,6 +20,7 @@ def page_analyze(file_name):
                  encoding = chardet.detect(value1)
                  if encoding['encoding'] == 'ascii':
                           clean = re.sub('[^\s!-~]', '', value1)
+                          # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
                           print >> fasci,clean[::-1]
 
 	         wordList = re.sub("[^\w]", " ",  line).split()
@@ -109,11 +110,18 @@ def print_tree(input_key):
                    
                    
 # create a dictionary 
+
+#contain all the lines in all the pages
 pagetables = dict()
+
+#contains the start of each page
 page_list = list()
 #buffer_read =""
 #buffer_read += fptr.read()
+
+#put all the lines in here before adding to pagetables
 cur_buf=""
+
 #print buffer_read
 #for line in buffer_read.readl():
 count=0;

@@ -213,12 +213,20 @@ for key, value in pagetables.iteritems() :
 		in_ptr = in_ptr + "000"  # converted the pointer to  7f1b1e4e9000
 		make_key = in_ptr+ "_"+input_ptr # recovered the key to hash into
 
+                new = list(make_key)
+                new[len(make_key)-1] = '0'
+                new = "".join(new)
+                make_key = new
                 try:
 		                 line = pagetables[make_key]    # get the line
                 except KeyError:
                        #mis_count = mis_count + 1
                        if (circle_count == 0):
-                       #print "Miss ",make_key," circle count: ",circle_count
+                              print "Miss ",make_key," circle count: ",circle_count
+                              mis_count = mis_count + 1
+                              break
+                       if (circle_count > 0):
+                              print "classic case of ignorance",traverse_array[0],circle_count
                               mis_count = mis_count + 1
                               break
 		ptr_list = re.sub("[^\w]", " ",  line).split()  #split the line
@@ -237,6 +245,10 @@ for key, value in pagetables.iteritems() :
                               print >> fptrc,"ptr =",orig_ptr,"not a cycle","count :",circle_count
                               break
 		# consider the appropriate pointer to move foraward with
+                if ((ref in ptr1addr or ref in ptr2addr) and input_ptr[len(input_ptr)-1]!='0' and input_ptr[len(input_ptr)-1]!='8'):
+                              print >> fptrc, "not an 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
+                              break
+               
 		prev_ptr = input_ptr
 		length = len(input_ptr)
 		if(input_ptr[length - 1] == '0'):
@@ -248,9 +260,10 @@ for key, value in pagetables.iteritems() :
 		
 		elif(input_ptr[length - 1] == '8'):
 		                 if(ptr2addr in ref):
+                                      #print input_ptr, "xxxxxxxxxx"
 		                      input_ptr = ptr2
+                                      #print input_ptr, "zzzzzzzzzz"
 		                      input_ptr = input_ptr[4:(len(ptr2))]
-		                      #print input_ptr
 		                      #print pagetables[make_key]
 		
 		#print "prev_ptr is",  prev_ptr
@@ -259,9 +272,9 @@ for key, value in pagetables.iteritems() :
 	        if (input_ptr in traverse_array):
 	                    #print >> fptrc,"ptr =",orig_ptr,"count :",circle_count
                             if input_ptr in traverse_array[0] and circle_count > 0:
-				  print >> fptrc,"a complete circle with circle_depth: ",input_ptr," ",circle_count
+				  print >> fptrc,"a complete circle with circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
                             else:
-                                  print >> fptrc,"a complete circle (pointing to itself)",input_ptr," ",circle_count
+                                  print >> fptrc,"a partial circle or pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
 	                    break
 
                 circle_count = circle_count + 1

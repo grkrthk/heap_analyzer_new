@@ -190,18 +190,22 @@ for page in page_list:
 
 
 fptrc = open("./ptr_analysis","w")
+seenu = 0
 mis_count = 0
 for key, value in pagetables.iteritems() :
-
+   seen_ptr = []
    if type(value) is list:
      for value_inst in value:
-       
         orig_ptr  = value_inst
         input_ptr = value_inst[4:16]
+        if input_ptr in seen_ptr:
+               seenu = seenu + 1
+               continue  
         traverse_array = []
         circle_count = 0
 	while (1):
 	        traverse_array.append(input_ptr)        
+                seen_ptr.append(input_ptr)
 	        #mask the last 12 bits to get the page name
 		ref = input_ptr[0:5]
 		#print ref
@@ -212,9 +216,11 @@ for key, value in pagetables.iteritems() :
                 try:
 		                 line = pagetables[make_key]    # get the line
                 except KeyError:
-                       mis_count = mis_count + 1
-                       print make_key
-                       break
+                       #mis_count = mis_count + 1
+                       if (circle_count == 0):
+                       #print "Miss ",make_key," circle count: ",circle_count
+                              mis_count = mis_count + 1
+                              break
 		ptr_list = re.sub("[^\w]", " ",  line).split()  #split the line
 	
 		ptr1 = ptr_list[1]+ptr_list[0]
@@ -223,11 +229,13 @@ for key, value in pagetables.iteritems() :
 		ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
 		ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer
 	
-		if (ref not in ptr1addr and ref not in ptr2addr):
+		if (input_ptr[len(input_ptr)-1] == '0' and ref not in ptr1addr):
 		              #print "we have hit a dead end",pagetables[make_key]
                               print >> fptrc,"ptr =",orig_ptr,"not a cycle","count :",circle_count
 	                      break
-		
+		if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr):
+                              print >> fptrc,"ptr =",orig_ptr,"not a cycle","count :",circle_count
+                              break
 		# consider the appropriate pointer to move foraward with
 		prev_ptr = input_ptr
 		length = len(input_ptr)
@@ -249,8 +257,13 @@ for key, value in pagetables.iteritems() :
 		#print "input_ptr is", input_ptr
 		#time.sleep(2)
 	        if (input_ptr in traverse_array):
-	                    print >> fptrc,"ptr =",orig_ptr,"count :",circle_count+1
+	                    #print >> fptrc,"ptr =",orig_ptr,"count :",circle_count
+                            if input_ptr in traverse_array[0] and circle_count > 0:
+				  print >> fptrc,"a complete circle with circle_depth: ",input_ptr," ",circle_count
+                            else:
+                                  print >> fptrc,"a complete circle (pointing to itself)",input_ptr," ",circle_count
 	                    break
+
                 circle_count = circle_count + 1
 	  
          	#collect all the pointer stats
@@ -258,4 +271,5 @@ for key, value in pagetables.iteritems() :
 print "total pointers is",count_of_ptrs
 print "mis_count is",mis_count
 print "count_pages : ",count_pages
+print "seenu :", seenu
 		            

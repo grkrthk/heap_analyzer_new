@@ -16,6 +16,7 @@ def page_analyze(file_name):
                  
                  # just printing the asci equivalent of every line
                  nums = line.split()                
+                 #print line
                  value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
                  encoding = chardet.detect(value1)
                  if encoding['encoding'] == 'ascii':
@@ -336,3 +337,5 @@ print "ptr link list and pointing to non 8 byte aligned pointer in the end",ptr_
 print "ptrs having a circular links with count n",ptr_circular_cntn
 print "ptr which are poting to itself",ptr_circular_cnt0
 print "ptrs which lead to partial circular link list i.e. loop in the middle",ptr_partial_circular
+print "Note: This analyzes direct pointers only and relations in a structure is not analyzed"
+

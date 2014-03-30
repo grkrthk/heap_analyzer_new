@@ -158,7 +158,7 @@ for page in page_list:
    count_pages = count_pages + 1   
    if page in pagetables.keys():
           value = pagetables[page]
-          print(page, len(value)*4)                  
+          print(page, len(value))                  
           count_of_ptrs = count_of_ptrs + len(value)
 
            
@@ -188,7 +188,26 @@ for page in page_list:
          
 # 7f1b1e4e9580
 
-
+# stats collection varibales
+# ptr not existant in the collection at the first go
+ptr_non_existant_ctr0 = 0
+# ptr not existant in the collection after few traversals
+ptr_non_existant_ctrn = 0
+# ptr link list and pointing to the data in the end
+ptr_link_list_ctrn_data = 0 
+# ptrs which are non 8 byte aligned and with ctr 0
+ptr_non8_ctr0 = 0
+# ptr link list and poiting to non 8 byte aligned pointer in the end
+ptr_non8_ctrn = 0
+# ptrs having a circular links with count n
+ptr_circular_cntn = 0
+# ptr which are poting to itself
+ptr_circular_cnt0 = 0
+# ptrs which lead to partial circular link list i.e. loop in the middle
+ptr_partial_circular = 0
+# ptrs which have data immediately
+ptr_link_list_ctr0_data = 0
+unique_ptr_count = 0
 fptrc = open("./ptr_analysis","w")
 seenu = 0
 mis_count = 0
@@ -204,6 +223,7 @@ for key, value in pagetables.iteritems() :
         traverse_array = []
         circle_count = 0
 	while (1):
+                unique_ptr_count = unique_ptr_count + 1
 	        traverse_array.append(input_ptr)        
                 seen_ptr.append(input_ptr)
 	        #mask the last 12 bits to get the page name
@@ -222,8 +242,10 @@ for key, value in pagetables.iteritems() :
                 except KeyError:
                        #mis_count = mis_count + 1
                        if (circle_count == 0):
+                              ptr_non_existant_ctr0 = ptr_non_existant_ctr0 + 1
                               print >> fptrc,"Pointer non existent in the collection: ",orig_ptr                              
                        if (circle_count > 0):
+                              ptr_non_existant_ctrn = ptr_non_existant_ctrn + 1
                               print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
                        mis_count = mis_count + 1
                        break
@@ -238,16 +260,31 @@ for key, value in pagetables.iteritems() :
 	
 		if (input_ptr[len(input_ptr)-1] == '0' and ref not in ptr1addr):
 		              #print "we have hit a dead end",pagetables[make_key]
+                              if(circle_count == 0):
+                                           ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
+                              elif(circle_count > 0):
+                                           ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
+
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
 	                      break
 		if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr):
+                              if(circle_count == 0):
+                                           ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
+                              elif(circle_count > 0):
+                                           ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
+
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
                               break
 		# consider the appropriate pointer to move foraward with
                 if ((ref in ptr1addr or ref in ptr2addr) and input_ptr[len(input_ptr)-1]!='0' and input_ptr[len(input_ptr)-1]!='8'):
-                              print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
-                              break
-               
+                              if(circle_count == 0):
+                                             print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
+                                             ptr_non8_ctr0 = ptr_non8_ctr0 + 1
+                                             break
+                              elif(circle_count > 0):
+                                             ptr_non8_ctrn = ptr_non8_ctrn + 1
+                                             print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
+                                             break               
 		prev_ptr = input_ptr
 		length = len(input_ptr)
 		if(input_ptr[length - 1] == '0'):
@@ -272,9 +309,12 @@ for key, value in pagetables.iteritems() :
 	                    #print >> fptrc,"ptr =",orig_ptr,"count :",circle_count
                             if input_ptr in traverse_array[0] and circle_count > 0:
 				  print >> fptrc,"circular link list circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
+                                  ptr_circular_cntn = ptr_circular_cntn + 1
                             elif(circle_count == 0 and (traverse_array[0] in input_ptr)):
                                   print >> fptrc,"pointer pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
+                                  ptr_circular_cnt0 = ptr_circular_cnt0 + 1
                             elif(circle_count > 0):
+                                  ptr_partial_circular = ptr_partial_circular + 1
                                   print >> fptrc,"partial circular link list:",traverse_array[0]," count:",circle_count
 	                    break
 
@@ -285,5 +325,14 @@ for key, value in pagetables.iteritems() :
 print "total pointers is",count_of_ptrs
 print "mis_count is",mis_count
 print "count_pages : ",count_pages
-print "seenu :", seenu
-		            
+print "unique ptr count:",unique_ptr_count
+print "redundant ptr count:",(count_of_ptrs - unique_ptr_count)	
+print "ptr not existant in the collection at the first go",ptr_non_existant_ctr0	            
+print "ptr not existant in the collection after few traversals:",ptr_non_existant_ctrn
+print "ptr link list and pointing to the data in the end:",ptr_link_list_ctrn_data
+print "ptrs which have data immediately:",ptr_link_list_ctr0_data
+print "ptrs which are non 8 byte aligned and with ctr 0",ptr_non8_ctr0
+print "ptr link list and pointing to non 8 byte aligned pointer in the end",ptr_non8_ctrn
+print "ptrs having a circular links with count n",ptr_circular_cntn
+print "ptr which are poting to itself",ptr_circular_cnt0
+print "ptrs which lead to partial circular link list i.e. loop in the middle",ptr_partial_circular

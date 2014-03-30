@@ -222,13 +222,12 @@ for key, value in pagetables.iteritems() :
                 except KeyError:
                        #mis_count = mis_count + 1
                        if (circle_count == 0):
-                              print "Miss ",make_key," circle count: ",circle_count
-                              mis_count = mis_count + 1
-                              break
+                              print >> fptrc,"Pointer non existent in the collection: ",orig_ptr                              
                        if (circle_count > 0):
-                              print "classic case of ignorance",traverse_array[0],circle_count
-                              mis_count = mis_count + 1
-                              break
+                              print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
+                       mis_count = mis_count + 1
+                       break
+
 		ptr_list = re.sub("[^\w]", " ",  line).split()  #split the line
 	
 		ptr1 = ptr_list[1]+ptr_list[0]
@@ -239,14 +238,14 @@ for key, value in pagetables.iteritems() :
 	
 		if (input_ptr[len(input_ptr)-1] == '0' and ref not in ptr1addr):
 		              #print "we have hit a dead end",pagetables[make_key]
-                              print >> fptrc,"ptr =",orig_ptr,"not a cycle","count :",circle_count
+                              print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
 	                      break
 		if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr):
-                              print >> fptrc,"ptr =",orig_ptr,"not a cycle","count :",circle_count
+                              print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
                               break
 		# consider the appropriate pointer to move foraward with
                 if ((ref in ptr1addr or ref in ptr2addr) and input_ptr[len(input_ptr)-1]!='0' and input_ptr[len(input_ptr)-1]!='8'):
-                              print >> fptrc, "not an 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
+                              print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
                               break
                
 		prev_ptr = input_ptr
@@ -272,9 +271,11 @@ for key, value in pagetables.iteritems() :
 	        if (input_ptr in traverse_array):
 	                    #print >> fptrc,"ptr =",orig_ptr,"count :",circle_count
                             if input_ptr in traverse_array[0] and circle_count > 0:
-				  print >> fptrc,"a complete circle with circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
-                            else:
-                                  print >> fptrc,"a partial circle or pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
+				  print >> fptrc,"circular link list circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
+                            elif(circle_count == 0 and (traverse_array[0] in input_ptr)):
+                                  print >> fptrc,"pointer pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
+                            elif(circle_count > 0):
+                                  print >> fptrc,"partial circular link list:",traverse_array[0]," count:",circle_count
 	                    break
 
                 circle_count = circle_count + 1

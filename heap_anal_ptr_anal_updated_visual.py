@@ -85,7 +85,12 @@ def page_analyze(file_name):
 	    #print 'string is in ascii'
 	    print value
 
+def add_nodes(x):
+    if(len(x) >= 2):
+       G.add_nodes_from(x)
+
 def add_edge(x):
+    if(len(x) >= 2):
         for i in range (0, len(x)-1):
              G.add_edge(x[i],x[i+1],color='blue')
 
@@ -231,7 +236,7 @@ for key, value in pagetables.iteritems() :
         input_ptr = value_inst[4:16]
         if input_ptr in seen_ptr:
                seenu = seenu + 1
-               continue  
+               #continue  
         traverse_array = []
         circle_count = 0
 	while (1):
@@ -260,7 +265,7 @@ for key, value in pagetables.iteritems() :
                               ptr_non_existant_ctrn = ptr_non_existant_ctrn + 1
                               print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
                        mis_count = mis_count + 1
-                       G.add_nodes_from(traverse_array)
+                       add_nodes(traverse_array)
                        add_edge(traverse_array)
                        break
 
@@ -278,7 +283,7 @@ for key, value in pagetables.iteritems() :
                                            ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
                               elif(circle_count > 0):
                                            ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
-                              G.add_nodes_from(traverse_array)
+                              add_nodes(traverse_array)
                               add_edge(traverse_array)
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
 	                      break
@@ -289,7 +294,7 @@ for key, value in pagetables.iteritems() :
                                            ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
 
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
-                              G.add_nodes_from(traverse_array)
+                              add_nodes(traverse_array)
                               add_edge(traverse_array)
                               break
 		# consider the appropriate pointer to move foraward with
@@ -297,13 +302,13 @@ for key, value in pagetables.iteritems() :
                               if(circle_count == 0):
                                              print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
                                              ptr_non8_ctr0 = ptr_non8_ctr0 + 1
-                                             G.add_nodes_from(traverse_array)
+                                             add_nodes(traverse_array)
                                              add_edge(traverse_array)
                                              break
                               elif(circle_count > 0):
                                              ptr_non8_ctrn = ptr_non8_ctrn + 1
                                              print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
-                                             G.add_nodes_from(traverse_array)
+                                             add_nodes(traverse_array)
                                              add_edge(traverse_array)
                                              break               
 		prev_ptr = input_ptr
@@ -337,7 +342,7 @@ for key, value in pagetables.iteritems() :
                             elif(circle_count > 0):
                                   ptr_partial_circular = ptr_partial_circular + 1
                                   print >> fptrc,"partial circular link list:",traverse_array[0]," count:",circle_count
-                            G.add_nodes_from(traverse_array)
+                            add_nodes(traverse_array)
                             add_edge(traverse_array)
 	                    break
 
@@ -363,8 +368,8 @@ print "Note: This analyzes direct pointers only and relations in a structure is 
 
 #G.node_attr.update(ndcolor="red", node="DC", style="filled")
 # use 'with' if you are writing a script and want to serve this up forever
-with d3py.NetworkXFigure(G, name="graph",width=3800, height=2100) as p:
+with d3py.NetworkXFigure(G, name="graph",width=4000, height=3000) as p:
     p += d3py.ForceLayout()
-    p.css['.node'] = {'fill': 'black', 'stroke': 'yellow', 'node_size':'8'}
+    p.css['.node'] = {'fill': 'green', 'stroke': 'yellow', 'node_size':'8'}
     p.css['.link'] = {'stroke': 'black', 'stoke-width': '6px'}
     p.show()

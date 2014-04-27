@@ -23,7 +23,12 @@ def page_analyze(file_name):
                  
                  # just printing the asci equivalent of every line
                  nums = line.split()                
+                 mem_pattern = "Memory"
+                 if(mem_pattern in line):
+                       continue
                  #print line
+                 #print line
+                 print line
                  value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
                  encoding = chardet.detect(value1)
                  if encoding['encoding'] == 'ascii':
@@ -80,6 +85,7 @@ def page_analyze(file_name):
 	#    print key
 	
 	#nums = pagetables['7f1b1e49f000_7f1b1e49f010'].split()
+        #print nums
 	value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
 	encoding = chardet.detect(value)
 	if encoding['encoding'] == 'ascii':
@@ -87,11 +93,11 @@ def page_analyze(file_name):
 	    print value
 
 def add_nodes(x):
-    if(len(x) > 2):
+    if(len(x) >= 2):
        G.add_nodes_from(x)
 
 def add_edge(x):
-    if(len(x) > 2):
+    if(len(x) >= 2):
         for i in range (0, len(x)-1):
              G.add_edge(x[i],x[i+1],color='blue')
 
@@ -237,7 +243,7 @@ for key, value in pagetables.iteritems() :
         input_ptr = value_inst[4:16]
         if input_ptr in seen_ptr:
                seenu = seenu + 1
-               #continue  
+               continue  
         traverse_array = []
         circle_count = 0
 	while (1):
@@ -336,6 +342,7 @@ for key, value in pagetables.iteritems() :
 	                    #print >> fptrc,"ptr =",orig_ptr,"count :",circle_count
                             if input_ptr in traverse_array[0] and circle_count > 0:
 				  print >> fptrc,"circular link list circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
+                                  print "GRK :",traverse_array
                                   ptr_circular_cntn = ptr_circular_cntn + 1
                             elif(circle_count == 0 and (traverse_array[0] in input_ptr)):
                                   print >> fptrc,"pointer pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
@@ -343,6 +350,7 @@ for key, value in pagetables.iteritems() :
                             elif(circle_count > 0):
                                   ptr_partial_circular = ptr_partial_circular + 1
                                   print >> fptrc,"partial circular link list:",traverse_array[0]," count:",circle_count
+                                  print "partial GRK:",traverse_array, input_ptr
                             add_nodes(traverse_array)
                             add_edge(traverse_array)
 	                    break

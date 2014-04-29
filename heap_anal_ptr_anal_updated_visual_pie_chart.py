@@ -28,7 +28,7 @@ def page_analyze(file_name):
                        continue
                  #print line
                  #print line
-                 print line
+                 #print line
                  value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
                  encoding = chardet.detect(value1)
                  if encoding['encoding'] == 'ascii':

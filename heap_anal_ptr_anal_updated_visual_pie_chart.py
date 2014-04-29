@@ -246,10 +246,10 @@ for key, value in pagetables.iteritems() :
                continue  
         traverse_array = []
         circle_count = 0
-	while (1):
+	while (1):               
                 unique_ptr_count = unique_ptr_count + 1
 	        traverse_array.append(input_ptr)        
-                seen_ptr.append(input_ptr)
+                seen_ptr.append(input_ptr)              
 	        #mask the last 12 bits to get the page name
 		ref = input_ptr[0:5]
                 #if ("00000000" in input_ptr):
@@ -274,7 +274,7 @@ for key, value in pagetables.iteritems() :
                               ptr_non_existant_ctrn = ptr_non_existant_ctrn + 1
                               print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
                      
-                       print"non_existant_ctr_n:", traverse_array
+                       print"non_existant_ctr_n:", traverse_array, len(traverse_array)
                        #traverse_array.pop()
                                      
                        mis_count = mis_count + 1
@@ -296,7 +296,7 @@ for key, value in pagetables.iteritems() :
                                            ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
                               elif(circle_count > 0):
                                            ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
-                              #print"linear link list:",traverse_array
+                              print"linear link list:",traverse_array,len(traverse_array)
                               add_nodes(traverse_array)
                               add_edge(traverse_array)
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
@@ -309,6 +309,7 @@ for key, value in pagetables.iteritems() :
 
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
                               #print"linear link list:", traverse_array
+                              print"linear link list:",traverse_array, len(traverse_array)
                               add_nodes(traverse_array)
                               add_edge(traverse_array)
                               break
@@ -360,9 +361,14 @@ for key, value in pagetables.iteritems() :
                                   ptr_partial_circular = ptr_partial_circular + 1
                                   print >> fptrc,"partial circular link list:",traverse_array[0]," count:",circle_count
                                   #print "partial GRK:",traverse_array, input_ptr
+                            print"circular link list:",traverse_array, len(traverse_array)
                             add_nodes(traverse_array)
                             add_edge(traverse_array)
 	                    break
+
+                # this is done because it's the extension of the already existing linked list
+                if input_ptr in seen_ptr:
+                             break
 
                 circle_count = circle_count + 1
 	  
@@ -409,3 +415,8 @@ with d3py.NetworkXFigure(G, name="graph",width=4000, height=3000) as p:
     p.css['.node'] = {'fill': 'green', 'stroke': 'yellow', 'node_size':'8'}
     p.css['.link'] = {'stroke': 'black', 'stoke-width': '6px'}
     p.show()
+
+
+#known bugs
+# for the pointers which have first 4 bytes as Os, Pointers can be misrepresented. Pointer comparison parameters should change 
+# for such pointers

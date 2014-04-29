@@ -275,7 +275,7 @@ for key, value in pagetables.iteritems() :
                               print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
                      
                        print"non_existant_ctr_n:", traverse_array
-                       traverse_array.pop()
+                       #traverse_array.pop()
                                      
                        mis_count = mis_count + 1
                        add_nodes(traverse_array)
@@ -296,7 +296,7 @@ for key, value in pagetables.iteritems() :
                                            ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
                               elif(circle_count > 0):
                                            ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
-                              print"linear link list:",traverse_array
+                              #print"linear link list:",traverse_array
                               add_nodes(traverse_array)
                               add_edge(traverse_array)
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
@@ -308,7 +308,7 @@ for key, value in pagetables.iteritems() :
                                            ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
 
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
-                              print"linear link list:", traverse_array
+                              #print"linear link list:", traverse_array
                               add_nodes(traverse_array)
                               add_edge(traverse_array)
                               break
@@ -350,16 +350,16 @@ for key, value in pagetables.iteritems() :
 	                    #print >> fptrc,"ptr =",orig_ptr,"count :",circle_count
                             if input_ptr in traverse_array[0] and circle_count > 0:
 				  print >> fptrc,"circular link list circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
-                                  print "GRK :",traverse_array
+                                  #print "GRK :",traverse_array
                                   ptr_circular_cntn = ptr_circular_cntn + 1
                             elif(circle_count == 0 and (traverse_array[0] in input_ptr)):
                                   print >> fptrc,"pointer pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
-                                  print "Link list: ", traverse_array                                  
+                                  #print "Link list: ", traverse_array                                  
                                   ptr_circular_cnt0 = ptr_circular_cnt0 + 1
                             elif(circle_count > 0):
                                   ptr_partial_circular = ptr_partial_circular + 1
                                   print >> fptrc,"partial circular link list:",traverse_array[0]," count:",circle_count
-                                  print "partial GRK:",traverse_array, input_ptr
+                                  #print "partial GRK:",traverse_array, input_ptr
                             add_nodes(traverse_array)
                             add_edge(traverse_array)
 	                    break

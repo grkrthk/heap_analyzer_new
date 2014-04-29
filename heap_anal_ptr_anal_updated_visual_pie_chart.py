@@ -93,11 +93,11 @@ def page_analyze(file_name):
 	    print value
 
 def add_nodes(x):
-    if(len(x) >= 2):
+    if(len(x) > 2):
        G.add_nodes_from(x)
 
 def add_edge(x):
-    if(len(x) >= 2):
+    if(len(x) > 2):
         for i in range (0, len(x)-1):
              G.add_edge(x[i],x[i+1],color='blue')
 
@@ -252,6 +252,8 @@ for key, value in pagetables.iteritems() :
                 seen_ptr.append(input_ptr)
 	        #mask the last 12 bits to get the page name
 		ref = input_ptr[0:5]
+                #if ("00000000" in input_ptr):
+                #           continue
 		#print ref
 		in_ptr = input_ptr[0:9]
 		in_ptr = in_ptr + "000"  # converted the pointer to  7f1b1e4e9000
@@ -271,6 +273,10 @@ for key, value in pagetables.iteritems() :
                        if (circle_count > 0):
                               ptr_non_existant_ctrn = ptr_non_existant_ctrn + 1
                               print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
+                     
+                       print"non_existant_ctr_n:", traverse_array
+                       traverse_array.pop()
+                                     
                        mis_count = mis_count + 1
                        add_nodes(traverse_array)
                        add_edge(traverse_array)
@@ -290,6 +296,7 @@ for key, value in pagetables.iteritems() :
                                            ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
                               elif(circle_count > 0):
                                            ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
+                              print"linear link list:",traverse_array
                               add_nodes(traverse_array)
                               add_edge(traverse_array)
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
@@ -301,6 +308,7 @@ for key, value in pagetables.iteritems() :
                                            ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
 
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
+                              print"linear link list:", traverse_array
                               add_nodes(traverse_array)
                               add_edge(traverse_array)
                               break
@@ -346,6 +354,7 @@ for key, value in pagetables.iteritems() :
                                   ptr_circular_cntn = ptr_circular_cntn + 1
                             elif(circle_count == 0 and (traverse_array[0] in input_ptr)):
                                   print >> fptrc,"pointer pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
+                                  print "Link list: ", traverse_array                                  
                                   ptr_circular_cnt0 = ptr_circular_cnt0 + 1
                             elif(circle_count > 0):
                                   ptr_partial_circular = ptr_partial_circular + 1

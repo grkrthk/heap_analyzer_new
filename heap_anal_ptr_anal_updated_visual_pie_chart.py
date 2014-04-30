@@ -8,6 +8,7 @@ from pylab import *
 logging.basicConfig(level=logging.DEBUG)
 
 G = nx.Graph()
+
 fasci = open("./asci_interpret","w")
 def page_analyze(file_name):
 	# open the file that has the page
@@ -93,15 +94,23 @@ def page_analyze(file_name):
 	    print value
 
 def add_nodes(x):
-    if(len(x) > 2):
+    if(len(x) >= 2):
        # for some reason its not honoring the color coding :( we can have different colors for different data structures
        o = [(x[i],{'color':'yellow'}) for i in range(0,len(x))]
        G.add_nodes_from(o) #color ='yellow')
 
+
 def add_edge(x):
-    if(len(x) > 2):
+    if(len(x) >= 2):
         for i in range (0, len(x)-1):
              G.add_edge(x[i],x[i+1],color='blue')
+       # with d3py.NetworkXFigure(G, name="graph",width=4000, height=3000) as p:
+       #	     p += d3py.ForceLayout()
+       #p.css['.node'] = {'fill': 'green', 'stroke': 'yellow', 'node_size':'8'}
+       #	     p.css['.node'] = {'stroke': 'yellow', 'node_size':'8'}
+       #	     p.css['.link'] = {'stroke': 'black', 'stoke-width': '6px'}
+       #p.show()
+
 
 def print_tree(input_key):
         
@@ -405,6 +414,7 @@ for key, value in pagetables.iteritems() :
 
                                   #print >> fptrc,"partial circular link list:",traverse_array," count:",circle_count
                                   #print "partial GRK:",traverse_array, input_ptr
+
                             print >> fptrc,"circular link list:",traverse_array, len(traverse_array)
                             #add_nodes(input_ptr)
                             traverse_array.append(input_ptr)
@@ -415,6 +425,7 @@ for key, value in pagetables.iteritems() :
 
                 # this is done because it's the extension of the already existing linked list, trying to be cautius here
                 if input_ptr in seen_ptr:
+                             traverse_array.append(input_ptr)
                              add_nodes(traverse_array)
                              add_edge(traverse_array)
                              break
@@ -484,3 +495,4 @@ with d3py.NetworkXFigure(G, name="graph",width=4000, height=3000) as p:
 # for the pointers which have first 4 bytes as Os, Pointers can be misrepresented. Pointer comparison parameters should change 
 # for such pointers
 # differentiate different data structures with different colors
+# shift to using d3js for better color coding as d3py is almost deprecated

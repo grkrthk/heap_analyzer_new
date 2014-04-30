@@ -4,6 +4,7 @@ import time
 import d3py
 import networkx as nx
 import logging
+import matplotlib.pyplot as plt
 import pylab as pl
 from pylab import *
 logging.basicConfig(level=logging.DEBUG)
@@ -315,24 +316,56 @@ for key, value in pagetables.iteritems() :
                 circle_count = circle_count + 1
 
 print "ptr_circular_cntn statistics"
+D = dict()
 for key, value in ptr_circular_cntn_dict.iteritems():
               print  key, len(value)
+              D[key] = len(value)
+plt.title('ptr_circular_cntn')
+plt.bar(range(len(D)), D.values(), align='center',width=0.5,color='black')
+plt.xticks(range(len(D)), D.keys())
+plt.show()
 
 print "ptr_partial_circular statistics"
+D1 = dict()
 for key, value in ptr_partial_circular_dict.iteritems():
               print  key, len(value)
+              D1[key] = len(value)
+plt.title('ptr_partial_circular')
+plt.bar(range(len(D1)), D1.values(), align='center',width=0.5,color='black')
+plt.xticks(range(len(D1)), D1.keys())
+plt.show()
 
 print "ptr_non8_ctrn_dict statistics"
+D2 = dict()
 for key, value in ptr_non8_ctrn_dict.iteritems():
               print  key, len(value)
+              D2[key] = len(value)
+plt.title('ptr_non8_ctrn')
+plt.bar(range(len(D2)), D2.values(), align='center',width=0.5,color='black')
+plt.xticks(range(len(D2)), D2.keys())
+plt.show()
 
 print "ptr_link_list_ctrn_data statistics"
+D3 = dict()
 for key, value in ptr_link_list_ctrn_data_dict.iteritems():
               print  key, len(value)
+              D3[key] = len(value)
+plt.title('ptr_link_list_ctrn')
+plt.bar(range(len(D3)), D3.values(), align='center',width=0.5,color='black')
+plt.xticks(range(len(D3)), D3.keys())
+plt.show()
+
 
 print "ptr_non_existant_ctrn statistics"
+D4 = dict()
 for key, value in ptr_non_existant_ctrn_dict.iteritems():
               print  key, len(value)
+              D4[key] = len(value)
+plt.title('ptr_non_existant_ctrn')
+plt.bar(range(len(D4)), D4.values(), align='center',width=0.5,color='black')
+plt.xticks(range(len(D4)), D4.keys())
+plt.show()
+
 
 print "total pointers is",count_of_ptrs
 print "mis_count is",mis_count
@@ -363,8 +396,6 @@ pl.pie(fracs,labels=labels,autopct='%1.1f%%',startangle=360)
 pl.title('Heap Analysis', bbox={'facecolor':'0.8', 'pad':5})
 l = pl.legend(title="ptr analysis",loc="lower right",prop={'size':8})
 pl.show()
-
-
 
 
 with d3py.NetworkXFigure(G, name="graph",width=4000, height=3000) as p:

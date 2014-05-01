@@ -321,7 +321,7 @@ for key, value in ptr_circular_cntn_dict.iteritems():
               print  key, len(value)
               D[key] = len(value)
 plt.title('ptr_circular_cntn')
-plt.bar(range(len(D)), D.values(), align='center',width=0.5,color='black')
+plt.bar(range(len(D)), D.values(), align='center',width=0.2,color='black')
 plt.xticks(range(len(D)), D.keys())
 plt.show()
 
@@ -411,3 +411,5 @@ with d3py.NetworkXFigure(G, name="graph",width=4000, height=3000) as p:
 # for such pointers
 # differentiate different data structures with different colors
 # shift to using d3js for better color coding as d3py is almost deprecated
+# establish directions to the pointers. We are currently not doing that. Things that might look like a tree needn't be a tree but
+# the visualisation make you believe it's a tree

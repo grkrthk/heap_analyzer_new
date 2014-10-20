@@ -89,15 +89,29 @@ def page_analyze(file_name):
 	    #print 'string is in ascii'
 	    print value
 
+#input: x is a pointer reference
+#return: none
+#this adds x to the graph structure to be visualized 
 def add_nodes(x):
+    #I (Kevin) this is is supposed to be verifying end-conditions for strings and making sure we don't accidentally 
+    #represent non-pointers at the end of things
+    #TODO Verifty this
     if(len(x) >= 2):
        G.add_nodes_from(x)
 
+#input: x is an edge between two pointers
+#return: none
+#this adds x to the graph structure to be visualized
 def add_edge(x):
+    #Same as above comment
+    #TODO Verify this 
     if(len(x) >= 2):
         for i in range (0, len(x)-1):
              G.add_edge(x[i],x[i+1],color='blue')
 
+
+#we don't seem to use this
+#TODO investigate this futher
 def print_tree(input_key):
         
         if input_key in pagetables.keys():
@@ -159,9 +173,9 @@ with  open('./full_blocks','r') as fptr:
 
 print "We now have all the pages indexed"
 
-#print out all the pointers
 count_of_ptrs = 0
 count_pages = 0
+#this loop calculates the total number of pointers (and is useful for printing stuff)
 for page in page_list:
    #print(page, len([item for item in value if item]))     
    count_pages = count_pages + 1   
@@ -170,7 +184,7 @@ for page in page_list:
           print(page, len(value))                  
           count_of_ptrs = count_of_ptrs + len(value)
 
-           
+#TODO verify this can be removed           
 #for key, value in pagetables.iteritems() :
 #           #print key, value
 #           if type(value) is not list:

@@ -6,8 +6,12 @@ import networkx as nx
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+#G is the reference to the visualization library
 G = nx.Graph()
 fasci = open("./asci_interpret","w")
+
+#this takes a file as an input (#.txt in all use cases in this program) and 
+#TODO figure out what this does
 def page_analyze(file_name):
 	# open the file that has the page
 	fpage = open(file_name, 'r')
@@ -15,14 +19,11 @@ def page_analyze(file_name):
 	page_name=""
 	count = 0
 	for line in iter(fpage.readline, ''):
-                 #print line
-	         # split the line into words
                  if(line == "\n"):
                      continue
                  
-                 # just printing the asci equivalent of every line
-                 nums = line.split()                
-                 #print line
+	         # split the line into words (splits on all whitespace if not defined)
+                 nums = line.split()
                  value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
                  encoding = chardet.detect(value1)
                  if encoding['encoding'] == 'ascii':
@@ -125,22 +126,19 @@ def print_tree(input_key):
                   input_key = "NULL"
                    
 
-#G = nx.Graph()                   
-# create a dictionary 
+#**********************
+#Here begins execution
+#**********************
 
 #contain all the lines in all the pages
 pagetables = dict()
 
 #contains the start of each page
 page_list = list()
-#buffer_read =""
-#buffer_read += fptr.read()
 
 #put all the lines in here before adding to pagetables
 cur_buf=""
 
-#print buffer_read
-#for line in buffer_read.readl():
 count=0;
 with  open('./full_blocks','r') as fptr:
         for line in iter(fptr.readline, ''):
@@ -156,16 +154,7 @@ with  open('./full_blocks','r') as fptr:
                         page_analyze(file_name)                      
                         count = count + 1
 
-print "here are all the pages parsed"
-#for page in page_list:
-#        print page
 print "We now have all the pages indexed"
-
-#input_key = raw_input ("Enter the key ")
-#print ("your key is" + input_key)
-#value = pagetables["7f1b1e4cf000"]
-#print value
-#print_tree(input_key)
 
 #print out all the pointers
 count_of_ptrs = 0

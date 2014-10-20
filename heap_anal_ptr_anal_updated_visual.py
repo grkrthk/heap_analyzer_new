@@ -6,6 +6,9 @@ import networkx as nx
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+#TODO where in here are we working with virtual or physical addresses?
+#I (Kevin) am unsure exactly
+
 #G is the reference to the visualization library
 G = nx.Graph()
 fasci = open("./asci_interpret","w")

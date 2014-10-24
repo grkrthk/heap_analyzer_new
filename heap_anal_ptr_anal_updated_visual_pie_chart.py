@@ -9,20 +9,25 @@ import pylab as pl
 from pylab import *
 logging.basicConfig(level=logging.DEBUG)
 
-G = nx.Graph()
+#we're working entirely with virtual addresses
 
+#G is the referene to the visualization library
+G = nx.Graph()
+#dump ascii values to another file
 fasci = open("./asci_interpret","w")
+
+#this takes a file as an input (#.txt in all use cases in this program) and
+#populates the pagetables structure
 def page_analyze(file_name):
           
 	fpage = open(file_name, 'r')           # open the file that has the page	
 	page_name=""
-	count = 0                              # count zero means the start of the page
+	page_line_count = 0                    # count zero means the start of the page
 	for line in iter(fpage.readline, ''):  # read everyline of the page
-                 	         
                  if(line == "\n"):             # if the line just has a new line continue
                      continue
                                   
-                 nums = line.split()           # split the line into multiple words
+                 nums = line.split()           # split the line into multiple words 
                  mem_pattern = "Memory"        # if the dump has a "Memory" just ignore
                  if(mem_pattern in line):       
                        continue
@@ -34,6 +39,7 @@ def page_analyze(file_name):
                           
                           print >> fasci,clean[::-1]  # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
 
+                 #example: wordList = 7f7adfeb4000 00000000 00000000 00000041 00000000
 	         wordList = re.sub("[^\w]", " ",  line).split()
 	         refw = wordList[0]
 	         
@@ -42,6 +48,8 @@ def page_analyze(file_name):
                         page_list.append(page_name)
 	
 	         # store the entire line as a function of page_name _ address         
+                 #page name + the first eight bytes
+                 #example: data_for_line = 7f7adfeb4000_dead0000
 	         data_for_line = page_name + "_" + wordList[0]
      	             
 	         ptr1 = wordList[2]+wordList[1]

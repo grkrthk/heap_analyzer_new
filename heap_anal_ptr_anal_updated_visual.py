@@ -33,7 +33,7 @@ def page_analyze(file_name):
                           # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
                           print >> fasci,clean[::-1]
 
-                 #example: wordList = 7f7adfeb4000 00000000 00000000 00000041 00000000
+                 #example: wordList = 7f7adfeb4000 dead0000 beef0000 f00d0000 cafe0000
 	         wordList = re.sub("[^\w]", " ",  line).split()
                  #example refw = 7f7adfeb4000
 	         refw = wordList[0]
@@ -45,13 +45,12 @@ def page_analyze(file_name):
 	
 	         # store the entire line as a function of page_name _ address         
                  #page name + the first eight bytes
-                 #example: data_for_line = 7f7adfeb4000_00000000
+                 #example: data_for_line = 7f7adfeb4000_dead0000
 	         data_for_line = page_name + "_" + wordList[0]
      	             
-	         ptr1 = wordList[2]+wordList[1] #example ptr1 = 0000000000000000
-	         ptr2 = wordList[4]+wordList[3] #example ptr1 = 0000000000000041
+	         ptr1 = wordList[2]+wordList[1] #example ptr1 = beef0000dead0000
+	         ptr2 = wordList[4]+wordList[3] #example ptr1 = cafe0000f00d0000
 	
-                 #using page name + 
 	         pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
 	
 	         # compare the refw and ptr1 and ptr2 to determine if they look like pointers
@@ -88,9 +87,7 @@ def page_analyze(file_name):
 #return: none
 #this adds x to the graph structure to be visualized 
 def add_nodes(x):
-    #I (Kevin) this is is supposed to be verifying end-conditions for strings and making sure we don't accidentally 
-    #represent non-pointers at the end of things
-    #TODO Verifty this
+    #check is to prevent single dots (can be increased to not show double dots, etc)
     if(len(x) >= 2):
        G.add_nodes_from(x)
 
@@ -98,8 +95,7 @@ def add_nodes(x):
 #return: none
 #this adds x to the graph structure to be visualized
 def add_edge(x):
-    #Same as above comment
-    #TODO Verify this 
+    #same as above
     if(len(x) >= 2):
         for i in range (0, len(x)-1):
              G.add_edge(x[i],x[i+1],color='blue')

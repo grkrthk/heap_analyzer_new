@@ -101,38 +101,6 @@ def add_edge(x):
              G.add_edge(x[i],x[i+1],color='blue')
 
 
-#we don't seem to use this
-#TODO investigate this futher
-def print_tree(input_key):
-        
-        if input_key in pagetables.keys():
-            value = pagetables[input_key]      
-        else:
-            print "Invalid key or no values exist for this key"
-            return
-
-        while (input_key in pagetables.keys()): 
-                  value = pagetables[input_key]
-                  print input_key
-                  # split the input_key
-                  if "_" in input_key:
-                           splitkeys = re.sub("[^\w]","_",input_key).split()
-                           page_name = splitkeys[0]
-                           line_name = splitkeys[1]
-                  
-                  # trying to see if the value words look like pointers
-                  valuewords = re.sub("[^\w]"," ", value).split()
-                  print valuewords
-                  addr1 = valuewords[2] + valuewords[1]
-                  addr2 = valuewords[4] + valuewords[3]
-                  subaddr = line_name[0:5]
-                  ptr1addr = addr1[4:9]
-                  ptr2addr = addr2[4:9]
-                  print subaddr
-                  print ptr1addr
-                  print ptr2addr
-                  input_key = "NULL"
-                   
 
 #**********************
 #Here begins execution

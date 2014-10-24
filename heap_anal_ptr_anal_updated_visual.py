@@ -6,21 +6,20 @@ import networkx as nx
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
-#TODO where in here are we working with virtual or physical addresses?
-#I (Kevin) am unsure exactly
+#we're working entirely with virtual addresses
 
 #G is the reference to the visualization library
 G = nx.Graph()
 fasci = open("./asci_interpret","w")
 
 #this takes a file as an input (#.txt in all use cases in this program) and 
-#TODO figure out what this does
+#populates the pagetables structure
 def page_analyze(file_name):
 	# open the file that has the page
 	fpage = open(file_name, 'r')
 	
 	page_name=""
-	count = 0
+	page_line_count = 0
 	for line in iter(fpage.readline, ''):
                  if(line == "\n"):
                      continue
@@ -34,20 +33,25 @@ def page_analyze(file_name):
                           # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
                           print >> fasci,clean[::-1]
 
+                 #example: wordList = 7f7adfeb4000 00000000 00000000 00000041 00000000
 	         wordList = re.sub("[^\w]", " ",  line).split()
+                 #example refw = 7f7adfeb4000
 	         refw = wordList[0]
 	         
-	         if count == 0 :
+	         if page_line_count == 0 :
 	                # initialize page_name to the first word
 	                page_name = refw
                         page_list.append(page_name)
 	
 	         # store the entire line as a function of page_name _ address         
+                 #page name + the first eight bytes
+                 #example: data_for_line = 7f7adfeb4000_00000000
 	         data_for_line = page_name + "_" + wordList[0]
      	             
-	         ptr1 = wordList[2]+wordList[1]
-	         ptr2 = wordList[4]+wordList[3]
+	         ptr1 = wordList[2]+wordList[1] #example ptr1 = 0000000000000000
+	         ptr2 = wordList[4]+wordList[3] #example ptr1 = 0000000000000041
 	
+                 #using page name + 
 	         pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
 	
 	         # compare the refw and ptr1 and ptr2 to determine if they look like pointers
@@ -56,6 +60,7 @@ def page_analyze(file_name):
 	         ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
 	         ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer         
 	       
+                 #does a pointer point to the current page? 
 	         if ptr1addr in subaddr :
 	                # store it in the page related to it's data structure
 	                if page_name in pagetables.keys():
@@ -70,19 +75,9 @@ def page_analyze(file_name):
 	                else:
 	                         pagetables[page_name] = [ptr2]
 	         
-	         # increment the count after every line is processed
-	         count = count + 1
+	         # increment the page_line_count after every line is processed
+	         page_line_count = page_line_count + 1
 	
-	# print all the key value pairs. 
-	
-	#for key, value in pagetables.iteritems() :
-	#    print key, value
-	
-	# for now it should just be one key
-	#for key in pagetables.keys():
-	#    print key
-	
-	#nums = pagetables['7f1b1e49f000_7f1b1e49f010'].split()
 	value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
 	encoding = chardet.detect(value)
 	if encoding['encoding'] == 'ascii':

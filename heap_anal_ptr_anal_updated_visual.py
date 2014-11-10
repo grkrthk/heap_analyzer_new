@@ -26,6 +26,12 @@ def page_analyze(file_name):
                  
 	         # split the line into words (splits on all whitespace if not defined)
                  nums = line.split()
+                 
+                 mem_pattern = "Memory"
+
+                 if(mem_pattern in line):
+                         continue
+
                  value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
                  encoding = chardet.detect(value1)
                  if encoding['encoding'] == 'ascii':
@@ -79,9 +85,6 @@ def page_analyze(file_name):
 	
 	value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
 	encoding = chardet.detect(value)
-	if encoding['encoding'] == 'ascii':
-	    #print 'string is in ascii'
-	    print value
 
 #input: x is a pointer reference
 #return: none
@@ -120,7 +123,6 @@ with  open('./full_blocks','r') as fptr:
         for line in iter(fptr.readline, ''):
                 if ("END OF PAGE" not in line):
                         cur_buf += line
-                        #cur_buf += "\n"
                 else :
                         file_name = str(count) + ".txt"
                         fptr = open(file_name,"w+")
@@ -143,30 +145,6 @@ for page in page_list:
           print(page, len(value))                  
           count_of_ptrs = count_of_ptrs + len(value)
 
-#TODO verify this can be removed           
-#for key, value in pagetables.iteritems() :
-#           #print key, value
-#           if type(value) is not list:
-#                     nums = value.split()
-#                     value1 = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
-#                     encoding = chardet.detect(value1)
-#                     if encoding['encoding'] == 'ascii':
-#                           print value1
-
-# take a pointer as a input and traverse the heap
-
-#take ptr as an input
-#while (1)
-#         go to the pointer location by hashing the dictionary
-#         check out the value (16 bytes)
-#         determine if that line contains a pointer
-#         if so split the value into (2 pointers)
-#         take the appropriate pointer based on the address
-#         print the indirection (--->)
-#         set preev as input
-#         set the input as one of the pointers
-#         if input is same as prev it has cyclic dependency
-         
          
 # 7f1b1e4e9580
 
@@ -262,7 +240,7 @@ for key, value in pagetables.iteritems() :
                               add_nodes(traverse_array)
                               add_edge(traverse_array)
                               break
-		# consider the appropriate pointer to move foraward with
+		# consider the appropriate pointer to move forward with
                 if ((ref in ptr1addr or ref in ptr2addr) and input_ptr[len(input_ptr)-1]!='0' and input_ptr[len(input_ptr)-1]!='8'):
                               if(circle_count == 0):
                                              print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
@@ -282,22 +260,13 @@ for key, value in pagetables.iteritems() :
 		                 if(ptr1addr in ref):
 		                      input_ptr = ptr1
 		                      input_ptr = input_ptr[4:(len(ptr1))]
-		                      #print input_ptr
-		                      #print pagetables[make_key]
 		
 		elif(input_ptr[length - 1] == '8'):
 		                 if(ptr2addr in ref):
-                                      #print input_ptr, "xxxxxxxxxx"
 		                      input_ptr = ptr2
-                                      #print input_ptr, "zzzzzzzzzz"
 		                      input_ptr = input_ptr[4:(len(ptr2))]
-		                      #print pagetables[make_key]
 		
-		#print "prev_ptr is",  prev_ptr
-		#print "input_ptr is", input_ptr
-		#time.sleep(2)
 	        if (input_ptr in traverse_array):
-	                    #print >> fptrc,"ptr =",orig_ptr,"count :",circle_count
                             if input_ptr in traverse_array[0] and circle_count > 0:
 				  print >> fptrc,"circular link list circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
                                   ptr_circular_cntn = ptr_circular_cntn + 1

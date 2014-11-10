@@ -39,8 +39,9 @@ def page_analyze(file_name):
                           
                           print >> fasci,clean[::-1]  # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
 
-                 #example: wordList = 7f7adfeb4000 00000000 00000000 00000041 00000000
+                 #example: wordList = 7f7adfeb4000 dead0000 beef0000 f00d0000 cafe0000
 	         wordList = re.sub("[^\w]", " ",  line).split()
+                 #example refw = 7f7adfeb4000
 	         refw = wordList[0]
 	         
 	         if count == 0 :	                
@@ -82,20 +83,27 @@ def page_analyze(file_name):
 	
 	value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
 	encoding = chardet.detect(value)
-
+#input: x is a pointer reference
+#return: none
+#this adds s to the graph structure to be visualized
 def add_nodes(x):
     if(len(x) >= 2):
        # for some reason its not honoring the color coding :( we can have different colors for different data structures
        o = [(x[i],{'color':'yellow'}) for i in range(0,len(x))]
        G.add_nodes_from(o) #color ='yellow')
 
-
+#input: x is an edge between two pointers
+#return: none
+#this adds x to the graph structure to be visualized
 def add_edge(x):
     if(len(x) >= 2):
         for i in range (0, len(x)-1):
              G.add_edge(x[i],x[i+1],color='blue')
 
-# create a dictionary 
+
+#**********************
+#Here begins execution
+#**********************
 
 #contain all the lines in all the pages
 pagetables = dict()
@@ -120,12 +128,13 @@ with  open('./full_blocks','r') as fptr:
                         page_analyze(file_name)                      
                         count = count + 1
 
-print "here are all the pages parsed"
 print "We now have all the pages indexed"
+
 count_of_ptrs = 0
 count_pages = 0
-
+#this loop calculates the total nuumber of pointers (and is useful for printing)
 for page in page_list:
+   #print(page, len([item for item in value if item]))
    count_pages = count_pages + 1   
    if page in pagetables.keys():
           value = pagetables[page]
@@ -236,6 +245,7 @@ for key, value in pagetables.iteritems() :
                               add_edge(traverse_array)
                               print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
 	                      break
+                # consider the appropriate pointer to move forward with
 		if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr):
                               if(circle_count == 0):
                                            ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1

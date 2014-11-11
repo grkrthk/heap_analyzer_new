@@ -6,6 +6,7 @@ import networkx as nx
 import logging
 import matplotlib.pyplot as plt
 import pylab as pl
+import sys
 from pylab import *
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,78 +20,79 @@ fasci = open("./asci_interpret","w")
 #this takes a file as an input (#.txt in all use cases in this program) and
 #populates the pagetables structure
 def page_analyze(file_name):
-          
-	fpage = open(file_name, 'r')           # open the file that has the page	
-	page_name=""
-	page_line_count = 0                    # count zero means the start of the page
-	for line in iter(fpage.readline, ''):  # read everyline of the page
-                 if(line == "\n"):             # if the line just has a new line continue
-                     continue
-                                  
-                 nums = line.split()           # split the line into multiple words 
-                 mem_pattern = "Memory"        # if the dump has a "Memory" just ignore
-                 if(mem_pattern in line):       
-                       continue
-          
-                 value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
-                 encoding = chardet.detect(value1)  # check if it makes sense in the ascii
-                 if encoding['encoding'] == 'ascii':
-                          clean = re.sub('[^\s!-~]', '', value1)
-                          
-                          print >> fasci,clean[::-1]  # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
 
-                 #example: wordList = 7f7adfeb4000 dead0000 beef0000 f00d0000 cafe0000
-	         wordList = re.sub("[^\w]", " ",  line).split()
-                 #example refw = 7f7adfeb4000
-	         refw = wordList[0]
-	         
-	         if count == 0 :	                
-	                page_name = refw   # initialize the page name when count is 0
-                        page_list.append(page_name)
+    fpage = open(file_name, 'r')           # open the file that has the page	
+    page_name=""
+    page_line_count = 0                    # count zero means the start of the page
+    for line in iter(fpage.readline, ''):  # read everyline of the page
+        if(line == "\n"):             # if the line just has a new line continue
+            continue
+
+            nums = line.split()           # split the line into multiple words 
+            mem_pattern = "Memory"        # if the dump has a "Memory" just ignore
+            if(mem_pattern in line):       
+                continue
+          
+            value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
+            encoding = chardet.detect(value1)  # check if it makes sense in the ascii
+            if encoding['encoding'] == 'ascii':
+                clean = re.sub('[^\s!-~]', '', value1)
+
+                print >> fasci,clean[::-1]  # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
+
+            #example: wordList = 7f7adfeb4000 dead0000 beef0000 f00d0000 cafe0000
+            wordList = re.sub("[^\w]", " ",  line).split()
+            #example refw = 7f7adfeb4000
+            refw = wordList[0]
+
+            if count == 0 :	                
+                page_name = refw   # initialize the page name when count is 0
+                page_list.append(page_name)
+
+            # store the entire line as a function of page_name _ address         
+            #page name + the first eight bytes
+            #example: data_for_line = 7f7adfeb4000_dead0000
+            data_for_line = page_name + "_" + wordList[0]
+
+            ptr1 = wordList[2]+wordList[1]
+            ptr2 = wordList[4]+wordList[3]
+
+            pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
+
+            # compare the refw and ptr1 and ptr2 to determine if they look like pointers
 	
-	         # store the entire line as a function of page_name _ address         
-                 #page name + the first eight bytes
-                 #example: data_for_line = 7f7adfeb4000_dead0000
-	         data_for_line = page_name + "_" + wordList[0]
-     	             
-	         ptr1 = wordList[2]+wordList[1]
-	         ptr2 = wordList[4]+wordList[3]
-	
-	         pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
-	
-	         # compare the refw and ptr1 and ptr2 to determine if they look like pointers
-	
-	         subaddr = refw[0:5]  # get the lower order address (it should occur in the lower address range
-	         ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
-	         ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer         
+            subaddr = refw[0:5]  # get the lower order address (it should occur in the lower address range
+            ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
+            ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer         
 	       
-	         if ptr1addr in subaddr :
-	                # store it in the page related to it's data structure
-	                if page_name in pagetables.keys():
-	                         pagetables[page_name].append(ptr1)
-	                else:
-	                         pagetables[page_name] = [ptr1]
-	                                     
-	         if ptr2addr in subaddr :
-	                # store it in the page related to it's data structure
-	                if page_name in pagetables.keys():
-	                         pagetables[page_name].append(ptr2)
-	                else:
-	                         pagetables[page_name] = [ptr2]
+            if ptr1addr in subaddr :
+                # store it in the page related to it's data structure
+                if page_name in pagetables.keys():
+                    pagetables[page_name].append(ptr1)
+                else:
+                    pagetables[page_name] = [ptr1]
+
+            if ptr2addr in subaddr :
+                # store it in the page related to it's data structure
+                if page_name in pagetables.keys():
+                    pagetables[page_name].append(ptr2)
+                else:
+                    pagetables[page_name] = [ptr2]
 	         
-	         # increment the count after every line is processed
-	         count = count + 1
-	
-	value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
-	encoding = chardet.detect(value)
+            # increment the count after every line is processed
+            count = count + 1
+
+            value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
+            encoding = chardet.detect(value)
+
 #input: x is a pointer reference
 #return: none
 #this adds s to the graph structure to be visualized
 def add_nodes(x):
     if(len(x) >= 2):
-       # for some reason its not honoring the color coding :( we can have different colors for different data structures
-       o = [(x[i],{'color':'yellow'}) for i in range(0,len(x))]
-       G.add_nodes_from(o) #color ='yellow')
+        # for some reason its not honoring the color coding :( we can have different colors for different data structures
+        o = [(x[i],{'color':'yellow'}) for i in range(0,len(x))]
+        G.add_nodes_from(o) #color ='yellow')
 
 #input: x is an edge between two pointers
 #return: none
@@ -98,12 +100,21 @@ def add_nodes(x):
 def add_edge(x):
     if(len(x) >= 2):
         for i in range (0, len(x)-1):
-             G.add_edge(x[i],x[i+1],color='blue')
+            G.add_edge(x[i],x[i+1],color='blue')
 
 
 #**********************
 #Here begins execution
 #**********************
+
+if len(sys.argv) != 2:
+    print "Invalid arguments, proper usage: python heap_anal_ptr_anal_updated_visual_pie_chart.py <filename>"
+    sys.exit(0)
+
+print "len(sys.argv) = ", len(sys.argv)
+print "sys.argv = ", sys.argv
+print "sys.argv[1] = ", sys.argv[1]
+filename = sys.argv[1]
 
 #contain all the lines in all the pages
 pagetables = dict()
@@ -115,18 +126,18 @@ page_list = list()
 cur_buf=""
 
 count=0;
-with  open('./full_blocks','r') as fptr:
-        for line in iter(fptr.readline, ''):
-                if ("END OF PAGE" not in line):
-                        cur_buf += line
-                else :
-                        file_name = str(count) + ".txt"
-                        fptr = open(file_name,"w+")
-                        fptr.write(cur_buf) 
-                        cur_buf = ""
-                        fptr.close()
-                        page_analyze(file_name)                      
-                        count = count + 1
+with  open('./' + filename,'r') as fptr:
+    for line in iter(fptr.readline, ''):
+        if ("END OF PAGE" not in line):
+            cur_buf += line
+        else :
+            file_name = str(count) + ".txt"
+            fptr = open(file_name,"w+")
+            fptr.write(cur_buf) 
+            cur_buf = ""
+            fptr.close()
+            page_analyze(file_name)                      
+            count = count + 1
 
 print "We now have all the pages indexed"
 
@@ -134,14 +145,14 @@ count_of_ptrs = 0
 count_pages = 0
 #this loop calculates the total nuumber of pointers (and is useful for printing)
 for page in page_list:
-   #print(page, len([item for item in value if item]))
-   count_pages = count_pages + 1   
-   if page in pagetables.keys():
-          value = pagetables[page]
-          print(page, len(value))                  
-          count_of_ptrs = count_of_ptrs + len(value)
+    #print(page, len([item for item in value if item]))
+    count_pages = count_pages + 1   
+    if page in pagetables.keys():
+        value = pagetables[page]
+        print(page, len(value))                  
+        count_of_ptrs = count_of_ptrs + len(value)
 
-           
+
 # 7f1b1e4e9580
 
 # stats collection varibales
@@ -179,16 +190,16 @@ seenu = 0
 mis_count = 0
 seen_ptr = []
 for key, value in pagetables.iteritems() :
-   if type(value) is list:
-     for value_inst in value:
-        orig_ptr  = value_inst
-        input_ptr = value_inst[4:16]
-        if input_ptr in seen_ptr:
-               seenu = seenu + 1
-               continue  
-        traverse_array = []
-        circle_count = 0
-	while (1):               
+    if type(value) is list:
+        for value_inst in value:
+            orig_ptr  = value_inst
+            input_ptr = value_inst[4:16]
+            if input_ptr in seen_ptr:
+                seenu = seenu + 1
+                continue  
+            traverse_array = []
+            circle_count = 0
+            while (1):               
                 unique_ptr_count = unique_ptr_count + 1
 	        traverse_array.append(input_ptr)        
                 seen_ptr.append(input_ptr)              
@@ -203,141 +214,145 @@ for key, value in pagetables.iteritems() :
                 new = "".join(new)
                 make_key = new
                 try:
-		                 line = pagetables[make_key]    # get the line
+                    line = pagetables[make_key]    # get the line
                 except KeyError:
-                       if (circle_count == 0):
-                              ptr_non_existant_ctr0 = ptr_non_existant_ctr0 + 1                              
-                              print >> fptrc,"Pointer/pointer like data non existent in the collection: ",orig_ptr                              
-                       if (circle_count > 0):
-                              ptr_non_existant_ctrn = ptr_non_existant_ctrn + 1
-                              if len(traverse_array) in ptr_non_existant_ctrn_dict.keys():
-                                 ptr_non_existant_ctrn_dict[len(traverse_array)].append(traverse_array)
-                              else:
-                                 ptr_non_existant_ctrn_dict[len(traverse_array)] = [[traverse_array]]
-                              print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
-                     
-                       traverse_array.pop()                                                            
-                       mis_count = mis_count + 1
-                       add_nodes(traverse_array)
-                       add_edge(traverse_array)
-                       break
+                    if (circle_count == 0):
+                        ptr_non_existant_ctr0 = ptr_non_existant_ctr0 + 1
+                        print >> fptrc,"Pointer/pointer like data non existent in the collection: ",orig_ptr                              
+                    if (circle_count > 0):
+                        ptr_non_existant_ctrn = ptr_non_existant_ctrn + 1
+                        if len(traverse_array) in ptr_non_existant_ctrn_dict.keys():
+                            ptr_non_existant_ctrn_dict[len(traverse_array)].append(traverse_array)
+                        else:
+                            ptr_non_existant_ctrn_dict[len(traverse_array)] = [[traverse_array]]
+                        print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
 
-		ptr_list = re.sub("[^\w]", " ",  line).split()  #split the line
-	
-		ptr1 = ptr_list[1]+ptr_list[0]
-		ptr2 = ptr_list[3]+ptr_list[2]
-	
-		ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
-		ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer
-	
-		if (input_ptr[len(input_ptr)-1] == '0' and ref not in ptr1addr):
-                              if(circle_count == 0):
-                                           ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
-                              elif(circle_count > 0):
-                                           ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1                                          
-		                           if len(traverse_array) in ptr_link_list_ctrn_data_dict.keys():
-                                		 ptr_link_list_ctrn_data_dict[len(traverse_array)].append(traverse_array)
-                              	           else:
-		                                 ptr_link_list_ctrn_data_dict[len(traverse_array)] = [[traverse_array]]
+                    traverse_array.pop()
 
-                              print"linear link list:",traverse_array,len(traverse_array)
-                              add_nodes(traverse_array)
-                              add_edge(traverse_array)
-                              print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
-	                      break
-                # consider the appropriate pointer to move forward with
-		if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr):
-                              if(circle_count == 0):
-                                           ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
-                              elif(circle_count > 0):
-                                           ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
-                                           if len(traverse_array) in ptr_link_list_ctrn_data_dict.keys():
-                                                 ptr_link_list_ctrn_data_dict[len(traverse_array)].append(traverse_array)
-                                           else:
-                                                 ptr_link_list_ctrn_data_dict[len(traverse_array)] = [[traverse_array]]
+                    mis_count = mis_count + 1
+                    add_nodes(traverse_array)
+                    add_edge(traverse_array)
+                    break
 
-                              print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
-                              print"linear link list:",traverse_array, len(traverse_array)
-                              add_nodes(traverse_array)
-                              add_edge(traverse_array)
-                              break
-		# consider the appropriate pointer to move foraward with
+                ptr_list = re.sub("[^\w]", " ",  line).split()  #split the line
+
+                ptr1 = ptr_list[1]+ptr_list[0]
+                ptr2 = ptr_list[3]+ptr_list[2]
+
+                ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
+                ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer
+
+                if (input_ptr[len(input_ptr)-1] == '0' and ref not in ptr1addr):
+                    if(circle_count == 0):
+                        ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
+                    elif(circle_count > 0):
+                        ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
+                        if len(traverse_array) in ptr_link_list_ctrn_data_dict.keys():
+                            ptr_link_list_ctrn_data_dict[len(traverse_array)].append(traverse_array)
+                        else:
+                            ptr_link_list_ctrn_data_dict[len(traverse_array)] = [[traverse_array]]
+
+                    print "linear link list:",traverse_array,len(traverse_array)
+                    add_nodes(traverse_array)
+                    add_edge(traverse_array)
+                    print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
+                    break
+
+                #consider the appropriate pointer to move forward with     
+                if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr):
+                    if(circle_count == 0):
+                        ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
+                    elif(circle_count > 0):
+                        ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
+                        if len(traverse_array) in ptr_link_list_ctrn_data_dict.keys():
+                            ptr_link_list_ctrn_data_dict[len(traverse_array)].append(traverse_array)
+                        else:
+                            ptr_link_list_ctrn_data_dict[len(traverse_array)] = [[traverse_array]]
+
+                    print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
+                    print"linear link list:",traverse_array, len(traverse_array)
+                    add_nodes(traverse_array)
+                    add_edge(traverse_array)
+                    break
+
+                # consider the appropriate pointer to move foraward with
                 if ((ref in ptr1addr or ref in ptr2addr) and input_ptr[len(input_ptr)-1]!='0' and input_ptr[len(input_ptr)-1]!='8'):
-                              if(circle_count == 0):
-                                             print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
-                                             ptr_non8_ctr0 = ptr_non8_ctr0 + 1
-                                             add_nodes(traverse_array)
-                                             add_edge(traverse_array)
-                                             break
-                              elif(circle_count > 0):
-                                             ptr_non8_ctrn = ptr_non8_ctrn + 1
-                                             if len(traverse_array) in ptr_non8_ctrn_dict.keys():
-                                                 ptr_non8_ctrn_dict[len(traverse_array)].append(traverse_array)
-                                             else:
-                                                 ptr_non8_ctrn_dict[len(traverse_array)] = [[traverse_array]]
+                    if(circle_count == 0):
+                        print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
+                        ptr_non8_ctr0 = ptr_non8_ctr0 + 1
+                        add_nodes(traverse_array)
+                        add_edge(traverse_array)
+                        break
+                    elif(circle_count > 0):
+                        ptr_non8_ctrn = ptr_non8_ctrn + 1
+                        if len(traverse_array) in ptr_non8_ctrn_dict.keys():
+                            ptr_non8_ctrn_dict[len(traverse_array)].append(traverse_array)
+                        else:
+                            ptr_non8_ctrn_dict[len(traverse_array)] = [[traverse_array]]
 
-                                             print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
-                                             add_nodes(traverse_array)
-                                             add_edge(traverse_array)
-                                             break               
-		prev_ptr = input_ptr
-		length = len(input_ptr)
-		if(input_ptr[length - 1] == '0'):
-		                 if(ptr1addr in ref):
-		                      input_ptr = ptr1
-		                      input_ptr = input_ptr[4:(len(ptr1))]
-		
-		elif(input_ptr[length - 1] == '8'):
-		                 if(ptr2addr in ref):
-		                      input_ptr = ptr2
-		                      input_ptr = input_ptr[4:(len(ptr2))]
-		
-	        if (input_ptr in traverse_array):
-                            if input_ptr in traverse_array[0] and circle_count > 0:
-				  print >> fptrc,"circular link list circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
-                                  ptr_circular_cntn = ptr_circular_cntn + 1
-                                  if len(traverse_array) in ptr_circular_cntn_dict.keys():
-                                                 ptr_circular_cntn_dict[len(traverse_array)].append(traverse_array)
-                                  else:
-                                                 ptr_circular_cntn_dict[len(traverse_array)] = [[traverse_array]]
+                        print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
+                        add_nodes(traverse_array)
+                        add_edge(traverse_array)
+                        break               
 
-                            elif(circle_count == 0 and (traverse_array[0] in input_ptr)):
-                                  print >> fptrc,"pointer pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
-                                  
-                                  ptr_circular_cnt0 = ptr_circular_cnt0 + 1
-                            elif(circle_count > 0):
-                                  traverse_array.append(input_ptr)
-                                  ptr_partial_circular = ptr_partial_circular + 1
-                                  if len(traverse_array) in ptr_partial_circular_dict.keys():
-                                                 ptr_partial_circular_dict[len(traverse_array)].append(traverse_array)
-                                                 print >> fptrc,"partial circular link list:",traverse_array
-                                  else:
-                                                 ptr_partial_circular_dict[len(traverse_array)] = [[traverse_array]]
-                                                 print >> fptrc,"partial circular link list:",traverse_array
+                prev_ptr = input_ptr
+                length = len(input_ptr)
+                if(input_ptr[length - 1] == '0'):
+                    if(ptr1addr in ref):
+                        input_ptr = ptr1
+                        input_ptr = input_ptr[4:(len(ptr1))]
+
+                elif(input_ptr[length - 1] == '8'):
+                    if(ptr2addr in ref):
+                        input_ptr = ptr2
+                        input_ptr = input_ptr[4:(len(ptr2))]
+
+                if (input_ptr in traverse_array):
+                    if input_ptr in traverse_array[0] and circle_count > 0:
+                        print >> fptrc,"circular link list circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
+                        ptr_circular_cntn = ptr_circular_cntn + 1
+                        if len(traverse_array) in ptr_circular_cntn_dict.keys():
+                            ptr_circular_cntn_dict[len(traverse_array)].append(traverse_array)
+                        else:
+                            ptr_circular_cntn_dict[len(traverse_array)] = [[traverse_array]]
+
+                    elif(circle_count == 0 and (traverse_array[0] in input_ptr)):
+                        print >> fptrc,"pointer pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
+
+                        ptr_circular_cnt0 = ptr_circular_cnt0 + 1
+                    elif(circle_count > 0):
+                        traverse_array.append(input_ptr)
+                        ptr_partial_circular = ptr_partial_circular + 1
+                        if len(traverse_array) in ptr_partial_circular_dict.keys():
+                            ptr_partial_circular_dict[len(traverse_array)].append(traverse_array)
+                            print >> fptrc,"partial circular link list:",traverse_array
+                        else:
+                            ptr_partial_circular_dict[len(traverse_array)] = [[traverse_array]]
+                            print >> fptrc,"partial circular link list:",traverse_array
 
 
-                            print >> fptrc,"circular link list:",traverse_array, len(traverse_array)
-                            traverse_array.append(input_ptr)
-                            add_nodes(traverse_array)
-                            add_edge(traverse_array)
-	                    break
+                    print >> fptrc,"circular link list:",traverse_array, len(traverse_array)
+                    traverse_array.append(input_ptr)
+                    add_nodes(traverse_array)
+                    add_edge(traverse_array)
+                    break
 
                 # this is done because it's the extension of the already existing linked list, trying to be cautius here
                 if input_ptr in seen_ptr:                           
-                             if("000000000000" not in input_ptr):
-                                         print "JUNK:", traverse_array, "INPUT_PTR", input_ptr
-                                         traverse_array.append(input_ptr)
-                             add_nodes(traverse_array)
-                             add_edge(traverse_array)
-                             break
+                    if("000000000000" not in input_ptr):
+                        print "JUNK:", traverse_array, "INPUT_PTR", input_ptr
+                        traverse_array.append(input_ptr)
+                    add_nodes(traverse_array)
+                    add_edge(traverse_array)
+                    break
 
                 circle_count = circle_count + 1
 
 print "ptr_circular_cntn statistics"
 D = dict()
 for key, value in ptr_circular_cntn_dict.iteritems():
-              print  key, len(value)
-              D[key] = len(value)
+    print  key, len(value)
+    D[key] = len(value)
 plt.title('ptr_circular_cntn')
 plt.bar(range(len(D)), D.values(), align='center',width=0.2,color='black')
 plt.xticks(range(len(D)), D.keys())
@@ -346,8 +361,8 @@ plt.show()
 print "ptr_partial_circular statistics"
 D1 = dict()
 for key, value in ptr_partial_circular_dict.iteritems():
-              print  key, len(value)
-              D1[key] = len(value)
+    print  key, len(value)
+    D1[key] = len(value)
 plt.title('ptr_partial_circular')
 plt.bar(range(len(D1)), D1.values(), align='center',width=0.5,color='black')
 plt.xticks(range(len(D1)), D1.keys())
@@ -356,8 +371,8 @@ plt.show()
 print "ptr_non8_ctrn_dict statistics"
 D2 = dict()
 for key, value in ptr_non8_ctrn_dict.iteritems():
-              print  key, len(value)
-              D2[key] = len(value)
+    print  key, len(value)
+    D2[key] = len(value)
 plt.title('ptr_non8_ctrn')
 plt.bar(range(len(D2)), D2.values(), align='center',width=0.5,color='black')
 plt.xticks(range(len(D2)), D2.keys())
@@ -366,8 +381,8 @@ plt.show()
 print "ptr_link_list_ctrn_data statistics"
 D3 = dict()
 for key, value in ptr_link_list_ctrn_data_dict.iteritems():
-              print  key, len(value)
-              D3[key] = len(value)
+    print  key, len(value)
+    D3[key] = len(value)
 plt.title('ptr_link_list_ctrn')
 plt.bar(range(len(D3)), D3.values(), align='center',width=0.5,color='black')
 plt.xticks(range(len(D3)), D3.keys())
@@ -377,8 +392,8 @@ plt.show()
 print "ptr_non_existant_ctrn statistics"
 D4 = dict()
 for key, value in ptr_non_existant_ctrn_dict.iteritems():
-              print  key, len(value)
-              D4[key] = len(value)
+    print  key, len(value)
+    D4[key] = len(value)
 plt.title('ptr_non_existant_ctrn')
 plt.bar(range(len(D4)), D4.values(), align='center',width=0.5,color='black')
 plt.xticks(range(len(D4)), D4.keys())

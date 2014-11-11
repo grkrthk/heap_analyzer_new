@@ -168,6 +168,8 @@ ptr_partial_circular = 0
 # ptrs which have data immediately
 ptr_link_list_ctr0_data = 0
 unique_ptr_count = 0
+# open file to write pointers non-existant in the traversal
+fptrcnexist = open("./ptr_nonexist", "w")
 fptrc = open("./ptr_analysis","w")
 seenu = 0
 mis_count = 0
@@ -204,9 +206,13 @@ for key, value in pagetables.iteritems() :
                        if (circle_count == 0):
                               ptr_non_existant_ctr0 = ptr_non_existant_ctr0 + 1
                               print >> fptrc,"Pointer non existent in the collection: ",orig_ptr                              
+                              #writes the hex value of the pointer
+                              fptrcnexist.write("0x"+str(orig_ptr)+"\n")
                        if (circle_count > 0):
                               ptr_non_existant_ctrn = ptr_non_existant_ctrn + 1
                               print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
+                              #writes the hex value of the pointer
+                              fptrcnexist.write("0x0000"+str(traverse_array[0])+"\n")
                        mis_count = mis_count + 1
                        add_nodes(traverse_array)
                        add_edge(traverse_array)
@@ -299,7 +305,8 @@ print "ptrs having a circular links with count n",ptr_circular_cntn
 print "ptr which are poting to itself",ptr_circular_cnt0
 print "ptrs which lead to partial circular link list i.e. loop in the middle",ptr_partial_circular
 print "Note: This analyzes direct pointers only and relations in a structure is not analyzed"
-
+#close the file
+fptrcnexist.close()
 #G.node_attr.update(ndcolor="red", node="DC", style="filled")
 # use 'with' if you are writing a script and want to serve this up forever
 with d3py.NetworkXFigure(G, name="graph",width=4000, height=3000) as p:

@@ -85,10 +85,10 @@ def page_analyze(file_name):
           
         #extract the reference/words from the line of memory
         nums = line.split()
-        value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
-        encoding = chardet.detect(value1)  # check if it makes sense in the ascii
+        value = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
+        encoding = chardet.detect(value)  # check if it makes sense in the ascii
         if encoding['encoding'] == 'ascii':
-            clean = re.sub('[^\s!-~]', '', value1)
+            clean = re.sub('[^\s!-~]', '', value)
 
             print >> fasci,clean[::-1]  # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
 
@@ -106,10 +106,6 @@ def page_analyze(file_name):
 
         # increment the page line count after every line is processed
         page_line_count = page_line_count + 1
-
-    #TODO: is there some reason the next two lines are required?
-    value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
-    encoding = chardet.detect(value)
 
 #takes in a list of pointers x and adds them and the edges between them to the visualization
 def add_nodes_and_edges(x):

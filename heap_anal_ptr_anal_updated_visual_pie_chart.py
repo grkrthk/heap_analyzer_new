@@ -12,7 +12,6 @@ logging.basicConfig(level=logging.DEBUG)
 server = xmlrpclib.Server('http://localhost:20738/RPC2')
 G = server.ubigraph
 
-
 #dump ascii values to another file
 fasci = open("./asci_interpret","w")
 
@@ -49,13 +48,13 @@ def page_analyze(file_name):
             page_name = refw   # initialize the page name when page line count is 0
             page_list.append(page_name)
 
-        # store the entire line as a function of page_name _ address         
+        # store the entire line as a function of <page_name>_<address>
         #page name + the first eight bytes
         #example: data_for_line = 7f7adfeb4000_dead0000
         data_for_line = page_name + "_" + wordList[0]
 
-        ptr1 = wordList[2]+wordList[1]
-        ptr2 = wordList[4]+wordList[3]
+        ptr1 = wordList[2]+wordList[1] #example ptr1 = beef0000dead0000
+        ptr2 = wordList[4]+wordList[3] #example ptr2 = cafe0000f00d0000
 
         pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
 
@@ -91,7 +90,7 @@ def add_nodes_and_edges(x):
         previous_ptr = None
         for i in range (0, len(x)):
             ptr = G.new_vertex()
-            G.set_vertex_attribute(ptr, 'color', '#ffff40')
+            G.set_vertex_attribute(ptr, 'color', '#' + color)
             if previous_ptr != None:
                 G.new_edge(ptr, previous_ptr)
             previous_ptr = ptr
@@ -101,14 +100,15 @@ def add_nodes_and_edges(x):
 #Here begins execution
 #**********************
 
-if len(sys.argv) != 2:
-    print "Invalid arguments, proper usage: python heap_anal_ptr_anal_updated_visual_pie_chart.py <filename>"
+if len(sys.argv) != 4:
+    print "Invalid arguments, proper usage: python heap_anal_ptr_anal_updated_visual_pie_chart.py <filename> <color> <clear>\nColor is in the hex rgb triple form, such as: 0000ff\nClear is y/n on whether to clear the nodes already in the visualization"
     sys.exit(0)
-
-print "len(sys.argv) = ", len(sys.argv)
-print "sys.argv = ", sys.argv
-print "sys.argv[1] = ", sys.argv[1]
 filename = sys.argv[1]
+color = sys.argv[2]
+clear = sys.argv[3]
+if clear == 'y':
+    G.clear()
+
 
 #contain all the lines in all the pages
 pagetables = dict()
@@ -180,16 +180,14 @@ ptr_link_list_ctr0_data = 0
 
 unique_ptr_count = 0
 fptrc = open("./ptr_analysis","w")
-seenu = 0
 mis_count = 0
 seen_ptr = []
 for key, value in pagetables.iteritems() :
-    if type(value) is list:
-        for value_inst in value:
+    if type(value) is list:     #only parse the lists
+        for value_inst in value:  
             orig_ptr  = value_inst
             input_ptr = value_inst[4:16]
             if input_ptr in seen_ptr:
-                seenu = seenu + 1
                 continue  
             traverse_array = []
             circle_count = 0

@@ -84,7 +84,8 @@ def page_analyze(file_name):
     value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
     encoding = chardet.detect(value)
 
-
+#TODO: I don't think edges are working properly
+#singly-linked lists seem to work in most cases (but not link_list.c), but balls and other structures don't seem to be
 def add_nodes_and_edges(x):
     if(len(x) >= 2):
         previous_ptr = None
@@ -193,7 +194,7 @@ for key, value in pagetables.iteritems() :
             circle_count = 0  #number of iterations of the while loop
             while (1):               
                 unique_ptr_count = unique_ptr_count + 1
-	        traverse_array.append(input_ptr)        
+	        traverse_array.append(input_ptr)  
                 seen_ptr.append(input_ptr)              
 	        #mask the last 12 bits to get the page name
 		ref = input_ptr[0:5]
@@ -205,9 +206,9 @@ for key, value in pagetables.iteritems() :
                 new[len(make_key)-1] = '0'
                 new = "".join(new)
                 make_key = new
-                try:
+                try:  #TODO: what is the advantage of this vs if make_key in pagetables:?
                     line = pagetables[make_key]    # get the line
-                except KeyError:
+                except KeyError:  
                     if (circle_count == 0):
                         ptr_non_existant_ctr0 = ptr_non_existant_ctr0 + 1
                         print >> fptrc,"Pointer/pointer like data non existent in the collection: ",orig_ptr                              
@@ -307,7 +308,7 @@ for key, value in pagetables.iteritems() :
 
                         ptr_circular_cnt0 = ptr_circular_cnt0 + 1
                     elif(circle_count > 0):
-                        traverse_array.append(input_ptr)  #TODO: why do we do this here?
+                        traverse_array.append(input_ptr)  #TODO: why do we do this here? isn't this already in traverse array??
                         ptr_partial_circular = ptr_partial_circular + 1
                         if len(traverse_array) in ptr_partial_circular_dict.keys():
                             ptr_partial_circular_dict[len(traverse_array)].append(traverse_array)
@@ -318,7 +319,7 @@ for key, value in pagetables.iteritems() :
 
 
                     print >> fptrc,"circular link list:",traverse_array, len(traverse_array)
-                    traverse_array.append(input_ptr)  #TODO: why do we do this here?
+                    traverse_array.append(input_ptr)  #TODO: why do we do this here? isn't tit in traverse array and couldn't we have already done this above (prev TODO)
                     add_nodes_and_edges(traverse_array)
                     break
 

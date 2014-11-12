@@ -88,13 +88,14 @@ def page_analyze(file_name):
 #singly-linked lists seem to work in most cases (but not link_list.c), but balls and other structures don't seem to be
 def add_nodes_and_edges(x):
     if(len(x) >= 2):
-        previous_ptr = None
         for i in range (0, len(x)):
-            ptr = G.new_vertex()
-            G.set_vertex_attribute(ptr, 'color', '#' + color)
-            if previous_ptr != None:
-                G.new_edge(ptr, previous_ptr)
-            previous_ptr = ptr
+            if not x[i] in node_refs:
+                temp_ref = G.new_vertex()
+                G.set_vertex_attribute(temp_ref, 'color', '#' + color)
+                node_refs[x[i]] = temp_ref
+            if i > 0:
+                G.new_edge(node_refs[x[i]], node_refs[x[i-1]])
+
 
 
 #**********************
@@ -110,6 +111,8 @@ clear = sys.argv[3]
 if clear == 'y':
     G.clear()
 
+#hold the node references so they can be pulled up by a pointer
+node_refs = dict()
 
 #contain all the lines in all the pages
 pagetables = dict()

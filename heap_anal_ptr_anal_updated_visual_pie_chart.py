@@ -91,8 +91,10 @@ def add_nodes_and_edges(x):
         previous_ptr = None
         for i in range (0, len(x)):
             ptr = G.new_vertex()
+            G.set_vertex_attribute(ptr, 'color', '#ffff40')
             if previous_ptr != None:
                 G.new_edge(ptr, previous_ptr)
+            previous_ptr = ptr
 
 
 #**********************

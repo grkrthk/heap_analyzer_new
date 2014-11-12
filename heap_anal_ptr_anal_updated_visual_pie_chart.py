@@ -115,7 +115,12 @@ def add_nodes_and_edges(x):
                 if node_refs[x[i]] != node_refs[x[i-1]]:
                     G.new_edge(node_refs[x[i]], node_refs[x[i-1]])
 
-
+def add_or_create_entry(ptr_list, target_dict):
+    if len(ptr_list) in target_dict:
+        target_dict[len(ptr_list)].append(ptr_list)
+    else:
+        target_dict[len(ptr_list)] = [[ptr_list]]
+    
 
 
 #**********************
@@ -237,10 +242,11 @@ for key, value in pagetables.iteritems() :
                     print >> fptrc,"Pointer/pointer like data non existent in the collection: ",orig_ptr                              
                 if (circle_count > 0):
                     ptr_non_existant_ctrn = ptr_non_existant_ctrn + 1
-                    if len(traverse_array) in ptr_non_existant_ctrn_dict.keys():
-                        ptr_non_existant_ctrn_dict[len(traverse_array)].append(traverse_array)
-                    else:
-                        ptr_non_existant_ctrn_dict[len(traverse_array)] = [[traverse_array]]
+                    #if len(traverse_array) in ptr_non_existant_ctrn_dict.keys():
+                    #    ptr_non_existant_ctrn_dict[len(traverse_array)].append(traverse_array)
+                    #else:
+                    #    ptr_non_existant_ctrn_dict[len(traverse_array)] = [[traverse_array]]
+                    add_or_create_entry(traverse_array, ptr_non_existant_ctrn_dict)
                     print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
 
                 traverse_array.pop()  #remove and return last element in traverse_array
@@ -262,10 +268,11 @@ for key, value in pagetables.iteritems() :
                     ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
                 elif(circle_count > 0):
                     ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
-                    if len(traverse_array) in ptr_link_list_ctrn_data_dict.keys():
-                        ptr_link_list_ctrn_data_dict[len(traverse_array)].append(traverse_array)
-                    else:
-                        ptr_link_list_ctrn_data_dict[len(traverse_array)] = [[traverse_array]]
+                    #if len(traverse_array) in ptr_link_list_ctrn_data_dict.keys():
+                    #    ptr_link_list_ctrn_data_dict[len(traverse_array)].append(traverse_array)
+                    #else:
+                    #    ptr_link_list_ctrn_data_dict[len(traverse_array)] = [[traverse_array]]
+                    add_or_create_entry(traverse_array, ptr_link_list_ctrn_data_dict)
 
                 print "linear link list:",traverse_array,len(traverse_array)
                 add_nodes_and_edges(traverse_array)
@@ -273,15 +280,16 @@ for key, value in pagetables.iteritems() :
                 break
 
             #consider the appropriate pointer to move forward with     
-            if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr):
+            if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr): #TODO: again, why 8?
                 if(circle_count == 0):
                     ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
                 elif(circle_count > 0):
                     ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
-                    if len(traverse_array) in ptr_link_list_ctrn_data_dict.keys():
-                        ptr_link_list_ctrn_data_dict[len(traverse_array)].append(traverse_array)
-                    else:
-                        ptr_link_list_ctrn_data_dict[len(traverse_array)] = [[traverse_array]]
+                    #if len(traverse_array) in ptr_link_list_ctrn_data_dict.keys():
+                    #    ptr_link_list_ctrn_data_dict[len(traverse_array)].append(traverse_array)
+                    #else:
+                    #    ptr_link_list_ctrn_data_dict[len(traverse_array)] = [[traverse_array]]
+                    add_or_create_entry(traverse_array, ptr_link_list_ctrn_data_dict)
 
                 print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
                 print"linear link list:",traverse_array, len(traverse_array)
@@ -296,10 +304,11 @@ for key, value in pagetables.iteritems() :
                     break
                 elif(circle_count > 0):
                     ptr_non8_ctrn = ptr_non8_ctrn + 1
-                    if len(traverse_array) in ptr_non8_ctrn_dict.keys():
-                        ptr_non8_ctrn_dict[len(traverse_array)].append(traverse_array)
-                    else:
-                        ptr_non8_ctrn_dict[len(traverse_array)] = [[traverse_array]]
+                    #if len(traverse_array) in ptr_non8_ctrn_dict.keys():
+                    #    ptr_non8_ctrn_dict[len(traverse_array)].append(traverse_array)
+                    #else:
+                    #    ptr_non8_ctrn_dict[len(traverse_array)] = [[traverse_array]]
+                    add_or_create_entry(traverse_array, ptr_non8_ctrn_dict)
 
                     print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
                     add_nodes_and_edges(traverse_array)
@@ -312,7 +321,7 @@ for key, value in pagetables.iteritems() :
                     input_ptr = ptr1
                     input_ptr = input_ptr[4:(len(ptr1))]
 
-            elif(input_ptr[length - 1] == '8'):
+            elif(input_ptr[length - 1] == '8'):  #TODO: why is this one 8 and the above 0?
                 if(ptr2addr in ref):
                     input_ptr = ptr2
                     input_ptr = input_ptr[4:(len(ptr2))]
@@ -321,10 +330,11 @@ for key, value in pagetables.iteritems() :
                 if input_ptr in traverse_array[0] and circle_count > 0:
                     print >> fptrc,"circular link list circle_depth: ",traverse_array[0]," ",orig_ptr," ",circle_count
                     ptr_circular_cntn = ptr_circular_cntn + 1
-                    if len(traverse_array) in ptr_circular_cntn_dict.keys():
-                        ptr_circular_cntn_dict[len(traverse_array)].append(traverse_array)
-                    else:
-                        ptr_circular_cntn_dict[len(traverse_array)] = [[traverse_array]]
+                    #if len(traverse_array) in ptr_circular_cntn_dict.keys():
+                    #    ptr_circular_cntn_dict[len(traverse_array)].append(traverse_array)
+                    #else:
+                    #    ptr_circular_cntn_dict[len(traverse_array)] = [[traverse_array]]
+                    add_or_create_entry(traverse_array, ptr_circular_cntn_dict)
 
                 elif(circle_count == 0 and (traverse_array[0] in input_ptr)):
                     print >> fptrc,"pointer pointing to itself",traverse_array[0]," ",orig_ptr," ",circle_count
@@ -333,12 +343,12 @@ for key, value in pagetables.iteritems() :
                 elif(circle_count > 0):
                     traverse_array.append(input_ptr)  #TODO: why do we do this here? isn't this already in traverse array??
                     ptr_partial_circular = ptr_partial_circular + 1
-                    if len(traverse_array) in ptr_partial_circular_dict.keys():
-                        ptr_partial_circular_dict[len(traverse_array)].append(traverse_array)
-                        print >> fptrc,"partial circular link list:",traverse_array
-                    else:
-                        ptr_partial_circular_dict[len(traverse_array)] = [[traverse_array]]
-                        print >> fptrc,"partial circular link list:",traverse_array
+                    #if len(traverse_array) in ptr_partial_circular_dict.keys():
+                    #    ptr_partial_circular_dict[len(traverse_array)].append(traverse_array)
+                    #else:
+                    #    ptr_partial_circular_dict[len(traverse_array)] = [[traverse_array]]
+                    add_or_create_entry(traverse_array, ptr_partial_circular_dict)
+                    print >> fptrc,"partial circular link list:",traverse_array
 
 
                 print >> fptrc,"circular link list:",traverse_array, len(traverse_array)

@@ -36,7 +36,7 @@ def populate_page_tables(page_name, wordList):
     ptr1 = wordList[2]+wordList[1] #example ptr1 = beef0000dead0000
     ptr2 = wordList[4]+wordList[3] #example ptr2 = cafe0000f00d0000
 
-    pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
+    pagestrings[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
 
     # compare the refw and ptr1 and ptr2 to determine if they look like pointers
     refw = wordList[0]
@@ -112,7 +112,8 @@ def add_nodes_and_edges(x):
                 G.set_vertex_attribute(temp_ref, 'color', '#' + color) 
                 node_refs[x[i]] = temp_ref
             if i > 0:  #ensure -1 won't make index negative
-                G.new_edge(node_refs[x[i]], node_refs[x[i-1]])
+                if node_refs[x[i]] != node_refs[x[i-1]]:
+                    G.new_edge(node_refs[x[i]], node_refs[x[i-1]])
 
 
 
@@ -135,6 +136,7 @@ node_refs = dict()
 
 #contain all the lines in all the pages
 pagetables = dict()
+pagestrings = dict()
 
 #contains the start of each page
 page_list = list()
@@ -229,7 +231,7 @@ for key, value in pagetables.iteritems() :
                 new = "".join(new)
                 make_key = new
                 try:  #TODO: what is the advantage of this vs if make_key in pagetables:?
-                    line = pagetables[make_key]    # get the line
+                    line = pagestrings[make_key]    # get the line
                 except KeyError:  
                     if (circle_count == 0):
                         ptr_non_existant_ctr0 = ptr_non_existant_ctr0 + 1

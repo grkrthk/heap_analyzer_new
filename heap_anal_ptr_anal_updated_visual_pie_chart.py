@@ -59,6 +59,15 @@ def populate_page_tables(page_name, wordList):
             pagetables[page_name] = [ptr2]
 	         
 
+def doesnt_contain_pointers(line):
+    if(line == "\n"):             # if the line just has a new line continue
+        return True
+    nums = line.split()           # split the line into multiple words 
+    mem_pattern = "Memory"        # if the dump has a "Memory" just ignore
+    if(mem_pattern in line):       
+        return True
+    return False
+
 
 #this takes a file as an input (#.txt in all use cases in this program) and
 #populates the pagetables structure
@@ -70,14 +79,11 @@ def page_analyze(file_name):
     for line in iter(fpage.readline, ''):  # read everyline of the page
 
         #skip lines without pointers
-        if(line == "\n"):             # if the line just has a new line continue
-            continue
-        nums = line.split()           # split the line into multiple words 
-        mem_pattern = "Memory"        # if the dump has a "Memory" just ignore
-        if(mem_pattern in line):       
+        if doesnt_contain_pointers(line):
             continue
           
         #extract the reference/words from the line of memory
+        nums = line.split()
         value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
         encoding = chardet.detect(value1)  # check if it makes sense in the ascii
         if encoding['encoding'] == 'ascii':
@@ -115,6 +121,7 @@ def add_nodes_and_edges(x):
                 if node_refs[x[i]] != node_refs[x[i-1]]:
                     G.new_edge(node_refs[x[i]], node_refs[x[i-1]])
 
+#adds the pointer list to the desired dictionary indexed by the count
 def add_or_create_entry(ptr_list, target_dict):
     if len(ptr_list) in target_dict:
         target_dict[len(ptr_list)].append(ptr_list)

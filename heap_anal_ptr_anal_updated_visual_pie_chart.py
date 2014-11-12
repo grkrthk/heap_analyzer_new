@@ -112,12 +112,13 @@ def add_nodes_and_edges(x):
     if(len(x) >= 2):
         for i in range (0, len(x)):
             if not x[i] in node_refs:  #don't add redundant pointers
-                temp_ref = G.new_vertex()
-                G.set_vertex_attribute(temp_ref, 'color', '#' + color)
-                node_refs[x[i]] = temp_ref
+                ptr_ref = G.new_vertex()
+                G.set_vertex_attribute(ptr_ref, 'color', '#' + color)
+                node_refs[x[i]] = ptr_ref
             if i > 0:  #ensure -1 won't make index negative
                 if node_refs[x[i]] != node_refs[x[i-1]]:
-                    G.new_edge(node_refs[x[i]], node_refs[x[i-1]])
+                    edge_ref = G.new_edge(node_refs[x[i]], node_refs[x[i-1]])
+#                    G.set_edge_attribute(edge_ref, 'arrow', 'true')
 
 #adds the pointer list to the desired dictionary indexed by the count
 def add_or_create_entry(pointer_list, target_dict):
@@ -234,12 +235,9 @@ for key, value in pagetables.iteritems() :
             in_ptr = input_ptr[0:9]
             in_ptr = in_ptr + "000"  # converted the pointer to  7f1b1e4e9000
             make_key = in_ptr+ "_"+input_ptr # recovered the key to hash into
+            make_key = make_key[:-1] + '0'  #cut last char and replace with '0'
 
-            new = list(make_key)
-            new[len(make_key)-1] = '0'
-            new = "".join(new)
-            make_key = new
-            try:  #TODO: what is the advantage of this vs if make_key in pagetables:?
+            try:  #TODO: what is the advantage of this vs if make_key in pagestrings:?
                 line = pagestrings[make_key]    # get the line
             except KeyError:
                 if (circle_count == 0):

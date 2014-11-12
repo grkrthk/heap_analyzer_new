@@ -58,11 +58,12 @@ def populate_page_tables(page_name, wordList):
         else:
             pagetables[page_name] = [ptr2]
 	         
-
+#takes a line of memory as input
+#returns True if the line doesn't have pointers
+#returns False otherwise
 def doesnt_contain_pointers(line):
     if(line == "\n"):             # if the line just has a new line continue
         return True
-    nums = line.split()           # split the line into multiple words 
     mem_pattern = "Memory"        # if the dump has a "Memory" just ignore
     if(mem_pattern in line):       
         return True
@@ -106,6 +107,7 @@ def page_analyze(file_name):
         # increment the page line count after every line is processed
         page_line_count = page_line_count + 1
 
+    #TODO: is there some reason the next two lines are required?
     value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
     encoding = chardet.detect(value)
 

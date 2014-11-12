@@ -189,8 +189,8 @@ for key, value in pagetables.iteritems() :
             input_ptr = value_inst[4:16]
             if input_ptr in seen_ptr:
                 continue  
-            traverse_array = []
-            circle_count = 0
+            traverse_array = []  #list of pointers
+            circle_count = 0  #number of iterations of the while loop
             while (1):               
                 unique_ptr_count = unique_ptr_count + 1
 	        traverse_array.append(input_ptr)        
@@ -219,7 +219,7 @@ for key, value in pagetables.iteritems() :
                             ptr_non_existant_ctrn_dict[len(traverse_array)] = [[traverse_array]]
                         print >> fptrc,"The end pointer was non existent in the collection: ",traverse_array[0],"count: ",circle_count
 
-                    traverse_array.pop()
+                    traverse_array.pop()  #remove and return last element in traverse_array
 
                     mis_count = mis_count + 1
                     add_nodes_and_edges(traverse_array)
@@ -307,7 +307,7 @@ for key, value in pagetables.iteritems() :
 
                         ptr_circular_cnt0 = ptr_circular_cnt0 + 1
                     elif(circle_count > 0):
-                        traverse_array.append(input_ptr)
+                        traverse_array.append(input_ptr)  #TODO: why do we do this here?
                         ptr_partial_circular = ptr_partial_circular + 1
                         if len(traverse_array) in ptr_partial_circular_dict.keys():
                             ptr_partial_circular_dict[len(traverse_array)].append(traverse_array)
@@ -318,11 +318,11 @@ for key, value in pagetables.iteritems() :
 
 
                     print >> fptrc,"circular link list:",traverse_array, len(traverse_array)
-                    traverse_array.append(input_ptr)
+                    traverse_array.append(input_ptr)  #TODO: why do we do this here?
                     add_nodes_and_edges(traverse_array)
                     break
 
-                # this is done because it's the extension of the already existing linked list, trying to be cautius here
+                # this is done because it's the extension of the already existing linked list, trying to be cautious here
                 if input_ptr in seen_ptr:                           
                     if("000000000000" not in input_ptr):
                         print "JUNK:", traverse_array, "INPUT_PTR", input_ptr

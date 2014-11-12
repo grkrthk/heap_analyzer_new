@@ -15,6 +15,41 @@ G = server.ubigraph
 #dump ascii values to another file
 fasci = open("./asci_interpret","w")
 
+#takes in page name (something like 7f7adfeb4000), and word list
+#stores pointers in pagetables
+def populate_page_tables(page_name, wordList):
+    # store the entire line as a function of <page_name>_<address>
+    #page name + the first eight bytes
+    #example: data_for_line = 7f7adfeb4000_dead0000
+    data_for_line = page_name + "_" + wordList[0]
+
+    ptr1 = wordList[2]+wordList[1] #example ptr1 = beef0000dead0000
+    ptr2 = wordList[4]+wordList[3] #example ptr2 = cafe0000f00d0000
+
+    pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
+
+    # compare the refw and ptr1 and ptr2 to determine if they look like pointers
+    refw = wordList[0]
+    subaddr = refw[0:5]  # get the lower order address (it should occur in the lower address range
+    ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
+    ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer         
+	       
+    if ptr1addr in subaddr :
+        # store it in the page related to it's data structure
+        if page_name in pagetables.keys():
+            pagetables[page_name].append(ptr1)
+        else:
+            pagetables[page_name] = [ptr1]
+
+    if ptr2addr in subaddr :
+        # store it in the page related to it's data structure
+        if page_name in pagetables.keys():
+            pagetables[page_name].append(ptr2)
+        else:
+            pagetables[page_name] = [ptr2]
+	         
+
+
 #this takes a file as an input (#.txt in all use cases in this program) and
 #populates the pagetables structure
 def page_analyze(file_name):
@@ -24,14 +59,15 @@ def page_analyze(file_name):
     page_line_count = 0                    # count zero means the start of the page
     for line in iter(fpage.readline, ''):  # read everyline of the page
 
+        #skip lines without pointers
         if(line == "\n"):             # if the line just has a new line continue
             continue
-
         nums = line.split()           # split the line into multiple words 
         mem_pattern = "Memory"        # if the dump has a "Memory" just ignore
         if(mem_pattern in line):       
             continue
           
+        #extract the reference/words from the line of memory
         value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
         encoding = chardet.detect(value1)  # check if it makes sense in the ascii
         if encoding['encoding'] == 'ascii':
@@ -48,36 +84,9 @@ def page_analyze(file_name):
             page_name = refw   # initialize the page name when page line count is 0
             page_list.append(page_name)
 
-        # store the entire line as a function of <page_name>_<address>
-        #page name + the first eight bytes
-        #example: data_for_line = 7f7adfeb4000_dead0000
-        data_for_line = page_name + "_" + wordList[0]
+        #store pointers in wordList into the proper location in pagetables[page_name]
+        populate_page_tables(page_name, wordList)
 
-        ptr1 = wordList[2]+wordList[1] #example ptr1 = beef0000dead0000
-        ptr2 = wordList[4]+wordList[3] #example ptr2 = cafe0000f00d0000
-
-        pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
-
-        # compare the refw and ptr1 and ptr2 to determine if they look like pointers
-	
-        subaddr = refw[0:5]  # get the lower order address (it should occur in the lower address range
-        ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
-        ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer         
-	       
-        if ptr1addr in subaddr :
-            # store it in the page related to it's data structure
-            if page_name in pagetables.keys():
-                pagetables[page_name].append(ptr1)
-            else:
-                pagetables[page_name] = [ptr1]
-
-        if ptr2addr in subaddr :
-            # store it in the page related to it's data structure
-            if page_name in pagetables.keys():
-                pagetables[page_name].append(ptr2)
-            else:
-                pagetables[page_name] = [ptr2]
-	         
         # increment the page line count after every line is processed
         page_line_count = page_line_count + 1
 

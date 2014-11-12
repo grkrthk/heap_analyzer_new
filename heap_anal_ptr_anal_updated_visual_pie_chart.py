@@ -6,6 +6,10 @@ import sys
 import xmlrpclib
 logging.basicConfig(level=logging.DEBUG)
 
+#************************************
+# Some global defines/initialization
+#************************************
+
 #we're working entirely with virtual addresses
 
 #G is the referene to the visualization library
@@ -14,6 +18,12 @@ G = server.ubigraph
 
 #dump ascii values to another file
 fasci = open("./asci_interpret","w")
+
+
+
+#******************
+# Helper Functions
+#******************
 
 #takes in page name (something like 7f7adfeb4000), and word list
 #stores pointers in pagetables
@@ -93,17 +103,17 @@ def page_analyze(file_name):
     value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
     encoding = chardet.detect(value)
 
-#TODO: I don't think edges are working properly
-#singly-linked lists seem to work in most cases (but not link_list.c), but balls and other structures don't seem to be
+#takes in a list of pointers x and adds them and the edges between them to the visualization
 def add_nodes_and_edges(x):
     if(len(x) >= 2):
         for i in range (0, len(x)):
-            if not x[i] in node_refs:
+            if not x[i] in node_refs:  #don't add redundant pointers
                 temp_ref = G.new_vertex()
-                G.set_vertex_attribute(temp_ref, 'color', '#' + color)
+                G.set_vertex_attribute(temp_ref, 'color', '#' + color) 
                 node_refs[x[i]] = temp_ref
-            if i > 0:
+            if i > 0:  #ensure -1 won't make index negative
                 G.new_edge(node_refs[x[i]], node_refs[x[i-1]])
+
 
 
 

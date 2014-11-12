@@ -1,19 +1,18 @@
 import re
 import chardet
 import time
-import d3py
-import networkx as nx
 import logging
-import matplotlib.pyplot as plt
-import pylab as pl
 import sys
-from pylab import *
+import xmlrpclib
 logging.basicConfig(level=logging.DEBUG)
 
 #we're working entirely with virtual addresses
 
 #G is the referene to the visualization library
-G = nx.Graph()
+server = xmlrpclib.Server('http://localhost:20738/RPC2')
+G = server.ubigraph
+
+
 #dump ascii values to another file
 fasci = open("./asci_interpret","w")
 
@@ -25,82 +24,75 @@ def page_analyze(file_name):
     page_name=""
     page_line_count = 0                    # count zero means the start of the page
     for line in iter(fpage.readline, ''):  # read everyline of the page
+
         if(line == "\n"):             # if the line just has a new line continue
             continue
 
-            nums = line.split()           # split the line into multiple words 
-            mem_pattern = "Memory"        # if the dump has a "Memory" just ignore
-            if(mem_pattern in line):       
-                continue
+        nums = line.split()           # split the line into multiple words 
+        mem_pattern = "Memory"        # if the dump has a "Memory" just ignore
+        if(mem_pattern in line):       
+            continue
           
-            value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
-            encoding = chardet.detect(value1)  # check if it makes sense in the ascii
-            if encoding['encoding'] == 'ascii':
-                clean = re.sub('[^\s!-~]', '', value1)
+        value1 = nums[4].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex") + nums[1].decode("hex")
+        encoding = chardet.detect(value1)  # check if it makes sense in the ascii
+        if encoding['encoding'] == 'ascii':
+            clean = re.sub('[^\s!-~]', '', value1)
 
-                print >> fasci,clean[::-1]  # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
+            print >> fasci,clean[::-1]  # remove the control characters when printing to asci_interpet (regex applied on each line of fasci)
 
-            #example: wordList = 7f7adfeb4000 dead0000 beef0000 f00d0000 cafe0000
-            wordList = re.sub("[^\w]", " ",  line).split()
-            #example refw = 7f7adfeb4000
-            refw = wordList[0]
+        #example: wordList = 7f7adfeb4000 dead0000 beef0000 f00d0000 cafe0000
+        wordList = re.sub("[^\w]", " ",  line).split()
+        #example refw = 7f7adfeb4000
+        refw = wordList[0]
 
-            if count == 0 :	                
-                page_name = refw   # initialize the page name when count is 0
-                page_list.append(page_name)
+        if page_line_count == 0 :	                
+            page_name = refw   # initialize the page name when page line count is 0
+            page_list.append(page_name)
 
-            # store the entire line as a function of page_name _ address         
-            #page name + the first eight bytes
-            #example: data_for_line = 7f7adfeb4000_dead0000
-            data_for_line = page_name + "_" + wordList[0]
+        # store the entire line as a function of page_name _ address         
+        #page name + the first eight bytes
+        #example: data_for_line = 7f7adfeb4000_dead0000
+        data_for_line = page_name + "_" + wordList[0]
 
-            ptr1 = wordList[2]+wordList[1]
-            ptr2 = wordList[4]+wordList[3]
+        ptr1 = wordList[2]+wordList[1]
+        ptr2 = wordList[4]+wordList[3]
 
-            pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
+        pagetables[data_for_line] = wordList[1] + "  " + wordList[2] + "  " + wordList[3] + "  " + wordList[4]          
 
-            # compare the refw and ptr1 and ptr2 to determine if they look like pointers
+        # compare the refw and ptr1 and ptr2 to determine if they look like pointers
 	
-            subaddr = refw[0:5]  # get the lower order address (it should occur in the lower address range
-            ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
-            ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer         
+        subaddr = refw[0:5]  # get the lower order address (it should occur in the lower address range
+        ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
+        ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer         
 	       
-            if ptr1addr in subaddr :
-                # store it in the page related to it's data structure
-                if page_name in pagetables.keys():
-                    pagetables[page_name].append(ptr1)
-                else:
-                    pagetables[page_name] = [ptr1]
+        if ptr1addr in subaddr :
+            # store it in the page related to it's data structure
+            if page_name in pagetables.keys():
+                pagetables[page_name].append(ptr1)
+            else:
+                pagetables[page_name] = [ptr1]
 
-            if ptr2addr in subaddr :
-                # store it in the page related to it's data structure
-                if page_name in pagetables.keys():
-                    pagetables[page_name].append(ptr2)
-                else:
-                    pagetables[page_name] = [ptr2]
+        if ptr2addr in subaddr :
+            # store it in the page related to it's data structure
+            if page_name in pagetables.keys():
+                pagetables[page_name].append(ptr2)
+            else:
+                pagetables[page_name] = [ptr2]
 	         
-            # increment the count after every line is processed
-            count = count + 1
+        # increment the page line count after every line is processed
+        page_line_count = page_line_count + 1
 
-            value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
-            encoding = chardet.detect(value)
+    value = nums[1].decode("hex") + nums[0].decode("hex") + nums[3].decode("hex") + nums[2].decode("hex")
+    encoding = chardet.detect(value)
 
-#input: x is a pointer reference
-#return: none
-#this adds s to the graph structure to be visualized
-def add_nodes(x):
+
+def add_nodes_and_edges(x):
     if(len(x) >= 2):
-        # for some reason its not honoring the color coding :( we can have different colors for different data structures
-        o = [(x[i],{'color':'yellow'}) for i in range(0,len(x))]
-        G.add_nodes_from(o) #color ='yellow')
-
-#input: x is an edge between two pointers
-#return: none
-#this adds x to the graph structure to be visualized
-def add_edge(x):
-    if(len(x) >= 2):
-        for i in range (0, len(x)-1):
-            G.add_edge(x[i],x[i+1],color='blue')
+        previous_ptr = None
+        for i in range (0, len(x)):
+            ptr = G.new_vertex()
+            if previous_ptr != None:
+                G.new_edge(ptr, previous_ptr)
 
 
 #**********************
@@ -230,8 +222,7 @@ for key, value in pagetables.iteritems() :
                     traverse_array.pop()
 
                     mis_count = mis_count + 1
-                    add_nodes(traverse_array)
-                    add_edge(traverse_array)
+                    add_nodes_and_edges(traverse_array)
                     break
 
                 ptr_list = re.sub("[^\w]", " ",  line).split()  #split the line
@@ -253,8 +244,7 @@ for key, value in pagetables.iteritems() :
                             ptr_link_list_ctrn_data_dict[len(traverse_array)] = [[traverse_array]]
 
                     print "linear link list:",traverse_array,len(traverse_array)
-                    add_nodes(traverse_array)
-                    add_edge(traverse_array)
+                    add_nodes_and_edges(traverse_array)
                     print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
                     break
 
@@ -271,8 +261,7 @@ for key, value in pagetables.iteritems() :
 
                     print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
                     print"linear link list:",traverse_array, len(traverse_array)
-                    add_nodes(traverse_array)
-                    add_edge(traverse_array)
+                    add_nodes_and_edges(traverse_array)
                     break
 
                 # consider the appropriate pointer to move foraward with
@@ -280,8 +269,6 @@ for key, value in pagetables.iteritems() :
                     if(circle_count == 0):
                         print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
                         ptr_non8_ctr0 = ptr_non8_ctr0 + 1
-                        add_nodes(traverse_array)
-                        add_edge(traverse_array)
                         break
                     elif(circle_count > 0):
                         ptr_non8_ctrn = ptr_non8_ctrn + 1
@@ -291,8 +278,7 @@ for key, value in pagetables.iteritems() :
                             ptr_non8_ctrn_dict[len(traverse_array)] = [[traverse_array]]
 
                         print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count
-                        add_nodes(traverse_array)
-                        add_edge(traverse_array)
+                        add_nodes_and_edges(traverse_array)
                         break               
 
                 prev_ptr = input_ptr
@@ -333,8 +319,7 @@ for key, value in pagetables.iteritems() :
 
                     print >> fptrc,"circular link list:",traverse_array, len(traverse_array)
                     traverse_array.append(input_ptr)
-                    add_nodes(traverse_array)
-                    add_edge(traverse_array)
+                    add_nodes_and_edges(traverse_array)
                     break
 
                 # this is done because it's the extension of the already existing linked list, trying to be cautius here
@@ -342,62 +327,10 @@ for key, value in pagetables.iteritems() :
                     if("000000000000" not in input_ptr):
                         print "JUNK:", traverse_array, "INPUT_PTR", input_ptr
                         traverse_array.append(input_ptr)
-                    add_nodes(traverse_array)
-                    add_edge(traverse_array)
+                    add_nodes_and_edges(traverse_array)
                     break
 
                 circle_count = circle_count + 1
-
-print "ptr_circular_cntn statistics"
-D = dict()
-for key, value in ptr_circular_cntn_dict.iteritems():
-    print  key, len(value)
-    D[key] = len(value)
-plt.title('ptr_circular_cntn')
-plt.bar(range(len(D)), D.values(), align='center',width=0.2,color='black')
-plt.xticks(range(len(D)), D.keys())
-plt.show()
-
-print "ptr_partial_circular statistics"
-D1 = dict()
-for key, value in ptr_partial_circular_dict.iteritems():
-    print  key, len(value)
-    D1[key] = len(value)
-plt.title('ptr_partial_circular')
-plt.bar(range(len(D1)), D1.values(), align='center',width=0.5,color='black')
-plt.xticks(range(len(D1)), D1.keys())
-plt.show()
-
-print "ptr_non8_ctrn_dict statistics"
-D2 = dict()
-for key, value in ptr_non8_ctrn_dict.iteritems():
-    print  key, len(value)
-    D2[key] = len(value)
-plt.title('ptr_non8_ctrn')
-plt.bar(range(len(D2)), D2.values(), align='center',width=0.5,color='black')
-plt.xticks(range(len(D2)), D2.keys())
-plt.show()
-
-print "ptr_link_list_ctrn_data statistics"
-D3 = dict()
-for key, value in ptr_link_list_ctrn_data_dict.iteritems():
-    print  key, len(value)
-    D3[key] = len(value)
-plt.title('ptr_link_list_ctrn')
-plt.bar(range(len(D3)), D3.values(), align='center',width=0.5,color='black')
-plt.xticks(range(len(D3)), D3.keys())
-plt.show()
-
-
-print "ptr_non_existant_ctrn statistics"
-D4 = dict()
-for key, value in ptr_non_existant_ctrn_dict.iteritems():
-    print  key, len(value)
-    D4[key] = len(value)
-plt.title('ptr_non_existant_ctrn')
-plt.bar(range(len(D4)), D4.values(), align='center',width=0.5,color='black')
-plt.xticks(range(len(D4)), D4.keys())
-plt.show()
 
 
 print "total pointers is",count_of_ptrs
@@ -415,27 +348,6 @@ print "ptrs having a circular links with count n",ptr_circular_cntn
 print "ptr which are poting to itself",ptr_circular_cnt0
 print "ptrs which lead to partial circular link list i.e. loop in the middle",ptr_partial_circular
 print "Note: This analyzes direct pointers only and relations in a structure is not analyzed"
-
-# create a pie chart for the above pointers
-figure(1, figsize=(6,6))
-ax = axes([0.1, 0.1, 0.8, 0.8])
-
-labels = 'ptr_non_existant_ctrn','ptr_link_list_ctrn_data','ptr_link_list_ctr0_data','ptr_non8_ctr0','ptr_non8_ctrn','ptr_circular_cntn','ptr_circular_cnt0','ptr_partial_circular'
-
-fracs = [ptr_non_existant_ctrn,ptr_link_list_ctrn_data,ptr_link_list_ctr0_data,ptr_non8_ctr0,ptr_non8_ctrn,ptr_circular_cntn,ptr_circular_cnt0,ptr_partial_circular]
-
-
-pl.pie(fracs,labels=labels,autopct='%1.1f%%',startangle=360)
-pl.title('Heap Analysis', bbox={'facecolor':'0.8', 'pad':5})
-l = pl.legend(title="ptr analysis",loc="lower right",prop={'size':8})
-pl.show()
-
-
-with d3py.NetworkXFigure(G, name="graph",width=4000, height=3000) as p:
-    p += d3py.ForceLayout()
-    p.css['.node'] = {'stroke': 'yellow', 'node_size':'8'}
-    p.css['.link'] = {'stroke': 'black', 'stoke-width': '6px'}
-    p.show()
 
 
 

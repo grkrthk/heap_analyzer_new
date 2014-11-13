@@ -121,11 +121,24 @@ def add_nodes_and_edges(x):
 #                    G.set_edge_attribute(edge_ref, 'arrow', 'true')
 
 #adds the pointer list to the desired dictionary indexed by the count
-def add_or_create_entry(pointer_list, target_dict):
-    if len(pointer_list) in target_dict:
-        target_dict[len(pointer_list)].append(pointer_list)
+def add_or_create_entry(ptr_list, target_dict):
+    if len(ptr_list) in target_dict:
+        target_dict[len(ptr_list)].append(ptr_list)
     else:
-        target_dict[len(pointer_list)] = [[pointer_list]]
+        target_dict[len(ptr_list)] = [[ptr_list]]
+
+
+#increments the correct count, updates dictionary, prints info, and adds to the visualization
+def handle_linked_list(circle_count, ptr_list, current_ptr):
+    if(circle_count == 0):
+        ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
+    elif(circle_count > 0):
+        ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
+        add_or_create_entry(ptr_list, ptr_link_list_ctrn_data_dict)
+
+    print >> fptrc,"ptr =",current_ptr,"linear link list","count :",circle_count
+    print"linear link list:",ptr_list, len(ptr_list)
+    add_nodes_and_edges(ptr_list)
 
 
 
@@ -262,32 +275,19 @@ for key, value in pagetables.iteritems() :
             ptr1addr = ptr1[4:9] # get the lower order address to compare for the first pointer
             ptr2addr = ptr2[4:9] # get the lower order address to compare for the second pointer
 
-            if (input_ptr[len(input_ptr)-1] == '0' and ref not in ptr1addr):
-                if(circle_count == 0):
-                    ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
-                elif(circle_count > 0):
-                    ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
-                    add_or_create_entry(traverse_array, ptr_link_list_ctrn_data_dict)
-
-                print "linear link list:",traverse_array,len(traverse_array)
-                add_nodes_and_edges(traverse_array)
-                print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
-                break
-
             #consider the appropriate pointer to move forward with
-            if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr): #TODO: again, why 8?
-                if(circle_count == 0):
-                    ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
-                elif(circle_count > 0):
-                    ptr_link_list_ctrn_data = ptr_link_list_ctrn_data + 1
-                    add_or_create_entry(traverse_array, ptr_link_list_ctrn_data_dict)
 
-                print >> fptrc,"ptr =",orig_ptr,"linear link list","count :",circle_count
-                print"linear link list:",traverse_array, len(traverse_array)
-                add_nodes_and_edges(traverse_array)
+            #first pointer
+            if (input_ptr[len(input_ptr)-1] == '0' and ref not in ptr1addr):
+                handle_linked_list(circle_count, traverse_array, orig_ptr)
+                break  #TODO: would we then not handle the second pointer???? 
+
+            #second pointer
+            if (input_ptr[len(input_ptr)-1] == '8' and ref not in ptr2addr): #TODO: again, why 8?
+                handle_linked_list(circle_count, traverse_array, orig_ptr)
                 break
 
-            # consider the appropriate pointer to move foraward with
+            #TODO: understand how input_ptr[len(input_ptr)-1] works exactly
             if ((ref in ptr1addr or ref in ptr2addr) and input_ptr[len(input_ptr)-1]!='0' and input_ptr[len(input_ptr)-1]!='8'):
                 if(circle_count == 0):
                     print >> fptrc, "non 8 byte aligned pointer",orig_ptr," ",input_ptr," ",circle_count

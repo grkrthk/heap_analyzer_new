@@ -109,7 +109,7 @@ def page_analyze(file_name):
 
 #takes in a list of pointers x and adds them and the edges between them to the visualization
 def add_nodes_and_edges(x):
-    if(len(x) >= 2):
+    if(len(x) >= 2):  
         for i in range (0, len(x)):
             if not x[i] in node_refs:  #don't add redundant pointers
                 ptr_ref = G.new_vertex()
@@ -130,6 +130,8 @@ def add_or_create_entry(ptr_list, target_dict):
 
 #increments the correct count, updates dictionary, prints info, and adds to the visualization
 def handle_linked_list(circle_count, ptr_list, current_ptr):
+    global ptr_link_list_ctr0_data # making sure we use global variable here
+    global ptr_link_list_ctrn_data 
     if(circle_count == 0):
         ptr_link_list_ctr0_data = ptr_link_list_ctr0_data + 1
     elif(circle_count > 0):

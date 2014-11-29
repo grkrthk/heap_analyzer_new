@@ -109,7 +109,7 @@ def page_analyze(file_name):
 
 #takes in a list of pointers x and adds them and the edges between them to the visualization
 def add_nodes_and_edges(x):
-    if(len(x) >= 2):  
+    if(len(x) > 3):  # make it a tunable parameter. 3 here means only link lists of size greater than 3 should be considered
         for i in range (0, len(x)):
             if not x[i] in node_refs:  #don't add redundant pointers
                 ptr_ref = G.new_vertex()
